@@ -726,7 +726,6 @@ input[type="file"] {
 </head>
 
 <body>
-<!-- Tela de Carregamento -->
 <div id="loading-screen">
   <div class="loading-logo">
     <div class="logo-text">arquivos de anomalias da C.C.O</div>
@@ -739,8 +738,7 @@ input[type="file"] {
       <div class="console-time" id="console-time"></div>
     </div>
     <div class="console-content" id="console-content">
-      <!-- Conteúdo do console será gerado dinamicamente -->
-    </div>
+      </div>
   </div>
   
   <div class="loading-bar-container">
@@ -781,8 +779,7 @@ input[type="file"] {
   <div class="anomaly-list-container">
     <label>ANOMALIAS REGISTRADAS</label>
     <div class="anomaly-list" id="anomalyList">
-      <!-- Lista de anomalias será carregada aqui -->
-    </div>
+      </div>
   </div>
   
   <div class="controls">
@@ -815,7 +812,6 @@ input[type="file"] {
     </div>
   </div>
   
-  <!-- Seção de Arquivos (inicialmente oculta) -->
   <div id="filesSection" style="display:none; margin-top:30px;">
     <div class="file-section">
       <h3>ARQUIVOS IMPORTANTES</h3>
@@ -948,6 +944,46 @@ function initializeMainSystem() {
   let viewingFiles = false;
 
   const el = id => document.getElementById(id);
+
+  // --- NOVA FUNÇÃO: SINCRONIZAR COM ARQUIVO EXTERNO NO GITHUB ---
+  async function syncWithRemote() {
+    try {
+      // Tenta buscar o arquivo database.json na mesma pasta do GitHub
+      const response = await fetch('database.json');
+      if (response.ok) {
+        const remoteData = await response.json();
+        
+        // Se o JSON tiver uma lista de anomalias, mescla com o que já tem
+        if (remoteData.anomalies && Array.isArray(remoteData.anomalies)) {
+           // Mesclagem inteligente para evitar duplicatas por ID
+           const mergeMap = new Map();
+           remoteData.anomalies.forEach(a => mergeMap.set(a.id, a));
+           saved.forEach(a => mergeMap.set(a.id, a));
+           
+           saved = Array.from(mergeMap.values());
+           localStorage.setItem('analog_entities', JSON.stringify(saved));
+        }
+
+        if (remoteData.importantFiles && Array.isArray(remoteData.importantFiles)) {
+           const fileMap = new Map();
+           remoteData.importantFiles.forEach(f => fileMap.set(f.id, f));
+           importantFiles.forEach(f => fileMap.set(f.id, f));
+
+           importantFiles = Array.from(fileMap.values());
+           localStorage.setItem('analog_files', JSON.stringify(importantFiles));
+        }
+        
+        loadAnomalies('');
+        if (saved.length > 0) loadAnomaly(0);
+        showNotification('Sincronizado com Banco de Dados Online.');
+      }
+    } catch (e) {
+      console.log('Sem banco de dados online detectado.');
+    }
+  }
+
+  // Chamar sincronização ao iniciar
+  syncWithRemote();
 
   // Carregar anomalias salvas
   function loadAnomalies(searchTerm = '') {
@@ -1134,7 +1170,6 @@ function initializeMainSystem() {
     const severityMap = {
       'irreversivel': 'Irreversível',
       'fatal': 'Fatal',
-      'biologico': 'Biologicamente destrutivo',
       'biologico': 'Biologicamente destrutivo'
     };
     return severityMap[severity] || severity;
@@ -1153,7 +1188,6 @@ function initializeMainSystem() {
     // Aplica efeitos baseados na severidade
     if (severity === 'irreversivel') {
       document.body.classList.add('tremor-1');
-      // Efeito de glitch ocasional
       glitchInterval = setInterval(() => {
         if (Math.random() > 0.7) {
           document.body.classList.add('glitch-active');
@@ -1166,7 +1200,6 @@ function initializeMainSystem() {
     
     if (severity === 'fatal') {
       document.body.classList.add('tremor-2');
-      // Efeito de glitch mais frequente
       glitchInterval = setInterval(() => {
         if (Math.random() > 0.5) {
           document.body.classList.add('glitch-active');
@@ -1179,10 +1212,8 @@ function initializeMainSystem() {
     
     if (severity === 'biologico') {
       document.body.classList.add('bio');
-      // Efeito de glitch constante e intenso
       document.body.classList.add('glitch-active');
       glitchInterval = setInterval(() => {
-        // Piscadas aleatórias mais intensas
         if (Math.random() > 0.8) {
           glitchOverlay.style.opacity = '0.6';
           setTimeout(() => {
@@ -1209,21 +1240,15 @@ function initializeMainSystem() {
     }
     
     filesList.innerHTML = '';
-    
-    // Ordenar por data (mais recente primeiro)
     anomalyFiles.sort((a, b) => new Date(b.date) - new Date(a.date));
     
     anomalyFiles.forEach((file, index) => {
       const fileItem = document.createElement('div');
       fileItem.className = 'file-item';
-      
       const date = new Date(file.date);
       const dateStr = date.toLocaleDateString('pt-BR');
       const timeStr = date.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-      
-      // Calcular "tamanho" baseado no conteúdo
-      const size = file.notes ? Math.ceil(file.notes.length / 100) : 1;
-      const sizeLabel = size === 1 ? '1KB' : `${size}KB`;
+      const sizeLabel = file.notes ? `${Math.ceil(file.notes.length / 100)}KB` : '1KB';
       
       fileItem.innerHTML = `
         <div class="file-label">${file.label || `Arquivo ${index + 1}`}</div>
@@ -1233,38 +1258,9 @@ function initializeMainSystem() {
         </div>
       `;
       
-      fileItem.addEventListener('click', () => {
-        viewFileDetails(file);
-      });
-      
+      fileItem.addEventListener('click', () => { viewFileDetails(file); });
       filesList.appendChild(fileItem);
     });
-    
-    // Adicionar botão para limpar arquivos desta anomalia
-    const clearBtn = document.createElement('button');
-    clearBtn.textContent = 'LIMPAR ARQUIVOS DESTA ANOMALIA';
-    clearBtn.style.cssText = `
-      margin-top:15px;
-      width:100%;
-      padding:8px;
-      background:rgba(179, 0, 0, 0.1);
-      border:1px solid #b30000;
-      color:#ff6666;
-      font-family:'Courier Prime',monospace;
-      cursor:pointer;
-    `;
-    
-    clearBtn.addEventListener('click', () => {
-      if (confirm(`Remover todos os ${anomalyFiles.length} arquivo(s) importantes registrados para esta anomalia?`)) {
-        importantFiles = importantFiles.filter(f => f.anomalyId !== anomalyId);
-        localStorage.setItem('analog_files', JSON.stringify(importantFiles));
-        loadFilesForAnomaly(anomalyId);
-        loadAnomalies(currentSearchTerm);
-        showNotification('Arquivos removidos com sucesso.');
-      }
-    });
-    
-    filesList.appendChild(clearBtn);
   }
 
   // Visualizar detalhes de um arquivo
@@ -1272,197 +1268,40 @@ function initializeMainSystem() {
     const anomaly = saved.find(a => a.id === file.anomalyId);
     if (!anomaly) return;
     
-    let details = `ARQUIVO IMPORTANTE\n`;
-    details += `===================\n`;
-    details += `Anomalia: ${anomaly.id}\n`;
-    details += `\n`;
-    details += `CONTEÚDO DO ARQUIVO:\n`;
-    details += `--------------------\n`;
-    
-    if (file.notes) {
-      details += file.notes;
-    } else {
-      details += `Arquivo marcado como importante.\n\n`;
-      details += `DADOS DA ANOMALIA:\n`;
-      details += `• Ameaça: ${anomaly.threat || 'Não especificada'}\n`;
-      details += `• Classificação: ${getSeverityText(anomaly.severity)}\n`;
-      if (anomaly.visual) details += `• ${anomaly.visual.substring(0, 100)}${anomaly.visual.length > 100 ? '...' : ''}\n`;
-      if (anomaly.behavior) details += `• ${anomaly.behavior.substring(0, 100)}${anomaly.behavior.length > 100 ? '...' : ''}\n`;
-    }
+    let details = `ARQUIVO IMPORTANTE\n===================\nAnomalia: ${anomaly.id}\n\nCONTEÚDO DO ARQUIVO:\n--------------------\n`;
+    details += file.notes || `Arquivo sem anotações extras.`;
     
     const modal = document.createElement('div');
-    modal.style.cssText = `
-      position:fixed;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
-      background:rgba(0,0,0,0.8);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      z-index:10000;
-    `;
+    modal.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10000;`;
     
     const modalContent = document.createElement('div');
-    modalContent.style.cssText = `
-      background:#141414;
-      border:1px solid var(--file-color);
-      padding:20px;
-      max-width:500px;
-      width:90%;
-      max-height:80vh;
-      overflow-y:auto;
-      font-family:'Courier Prime',monospace;
-      white-space:pre-wrap;
-      color:#e8e8e8;
-      box-shadow:0 0 20px rgba(0,153,255,0.3);
-    `;
+    modalContent.style.cssText = `background:#141414;border:1px solid var(--file-color);padding:20px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;font-family:'Courier Prime',monospace;white-space:pre-wrap;color:#e8e8e8;box-shadow:0 0 20px rgba(0,153,255,0.3);`;
     
     modalContent.innerHTML = `
-      <div style="color:var(--file-color); font-family:'VT323',monospace; font-size:1.2em; margin-bottom:10px; border-bottom:1px solid var(--file-color); padding-bottom:5px;">
-        📁 ARQUIVO IMPORTANTE
-      </div>
+      <div style="color:var(--file-color); font-family:'VT323',monospace; font-size:1.2em; margin-bottom:10px; border-bottom:1px solid var(--file-color); padding-bottom:5px;">📁 ARQUIVO IMPORTANTE</div>
       <div style="font-size:0.9em; line-height:1.6; margin-bottom:15px;">${details}</div>
       <div style="margin-top:20px; display:flex; gap:10px;">
-        <button id="modalClose" style="flex:1; padding:8px; background:#333; border:1px solid #444; color:#e8e8e8; cursor:pointer; font-family:'Courier Prime',monospace;">
-          FECHAR
-        </button>
-        <button id="modalDelete" style="flex:1; padding:8px; background:rgba(179,0,0,0.2); border:1px solid #b30000; color:#ff6666; cursor:pointer; font-family:'Courier Prime',monospace;">
-          REMOVER ARQUIVO
-        </button>
+        <button id="modalClose" style="flex:1; padding:8px; background:#333; border:1px solid #444; color:#e8e8e8; cursor:pointer;">FECHAR</button>
+        <button id="modalDelete" style="flex:1; padding:8px; background:rgba(179,0,0,0.2); border:1px solid #b30000; color:#ff6666; cursor:pointer;">REMOVER</button>
       </div>
     `;
     
     modal.appendChild(modalContent);
     document.body.appendChild(modal);
     
-    el('modalClose').addEventListener('click', () => {
-      document.body.removeChild(modal);
-    });
-    
-    el('modalDelete').addEventListener('click', () => {
-      if (confirm('Remover este arquivo permanentemente?')) {
+    el('modalClose').onclick = () => document.body.removeChild(modal);
+    el('modalDelete').onclick = () => {
+      if (confirm('Remover permanentemente?')) {
         importantFiles = importantFiles.filter(f => f.id !== file.id);
         localStorage.setItem('analog_files', JSON.stringify(importantFiles));
         document.body.removeChild(modal);
         loadFilesForAnomaly(file.anomalyId);
-        loadAnomalies(currentSearchTerm);
         showNotification('Arquivo removido.');
       }
-    });
-    
-    // Fechar ao clicar fora
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        document.body.removeChild(modal);
-      }
-    });
+    };
   }
 
-  // Marcar uma anomalia como arquivo importante
-  el('btnMarkFile').addEventListener('click', () => {
-    if (currentAnomalyIndex < 0 || currentAnomalyIndex >= saved.length) {
-      showNotification('Selecione uma anomalia primeiro.');
-      return;
-    }
-    
-    const anomaly = saved[currentAnomalyIndex];
-    
-    // Verificar se já existe arquivo para esta anomalia
-    const existingFile = importantFiles.find(f => f.anomalyId === anomaly.id);
-    if (existingFile) {
-      if (!confirm(`Já existe um arquivo importante para "${anomaly.id}".\nDeseja atualizá-lo com novas informações?`)) {
-        return;
-      }
-    }
-    
-    // Perguntar se quer adicionar notas personalizadas
-    const addNotes = confirm(`Criar arquivo importante para "${anomaly.id}"\n\nDeseja adicionar anotações ao arquivo? (Cancelar para usar dados padrão)`);
-    
-    let notes = '';
-    let label = `Arquivo - ${anomaly.id}`;
-    
-    if (addNotes) {
-      notes = prompt('Digite suas anotações para este arquivo importante:', '');
-      if (notes === null) return; // Usuário cancelou
-      
-      const customLabel = prompt('Título do arquivo (opcional):', label);
-      if (customLabel !== null && customLabel.trim() !== '') {
-        label = customLabel.trim();
-      }
-    } else {
-      // Conteúdo padrão baseado nos dados da anomalia
-      notes = `ARQUIVO IMPORTANTE - CLASSIFICAÇÃO: ${getSeverityText(anomaly.severity)}\n`;
-      notes += `============================================\n\n`;
-      notes += `ANOMALIA: ${anomaly.id}\n`;
-      notes += `AMEAÇA: ${anomaly.threat || 'Não classificada'}\n`;
-      notes += `DATA DO REGISTRO: ${anomaly.date ? new Date(anomaly.date).toLocaleString('pt-BR') : 'Não registrada'}\n\n`;
-      
-      if (anomaly.visual) {
-        notes += `RELATO VISUAL:\n${anomaly.visual}\n\n`;
-      }
-      
-      if (anomaly.behavior) {
-        notes += `COMPORTAMENTO:\n${anomaly.behavior}\n\n`;
-      }
-      
-      if (anomaly.effects) {
-        notes += `EFEITOS DOCUMENTADOS:\n${anomaly.effects}\n\n`;
-      }
-    }
-    
-    const file = {
-      id: 'FILE_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-      anomalyId: anomaly.id,
-      date: new Date().toISOString(),
-      notes: notes,
-      label: label
-    };
-    
-    // Se já existe, substituir
-    if (existingFile) {
-      const index = importantFiles.findIndex(f => f.id === existingFile.id);
-      importantFiles[index] = file;
-    } else {
-      importantFiles.push(file);
-    }
-    
-    localStorage.setItem('analog_files', JSON.stringify(importantFiles));
-    
-    // Atualizar interface
-    loadAnomalies(currentSearchTerm);
-    if (viewingFiles) {
-      loadFilesForAnomaly(anomaly.id);
-    }
-    
-    showNotification(`Arquivo importante criado para "${anomaly.id}"`);
-  });
-
-  // Alternar visualização de arquivos
-  el('btnViewFiles').addEventListener('click', () => {
-    viewingFiles = !viewingFiles;
-    
-    if (viewingFiles) {
-      if (currentAnomalyIndex < 0 || currentAnomalyIndex >= saved.length) {
-        showNotification('Selecione uma anomalia primeiro.');
-        viewingFiles = false;
-        return;
-      }
-      
-      const anomaly = saved[currentAnomalyIndex];
-      el('btnViewFiles').textContent = 'OCULTAR ARQUIVOS';
-      el('btnViewFiles').style.background = 'rgba(0, 153, 255, 0.2)';
-      el('filesSection').style.display = 'block';
-      loadFilesForAnomaly(anomaly.id);
-    } else {
-      el('btnViewFiles').textContent = 'VER ARQUIVOS';
-      el('btnViewFiles').style.background = '';
-      el('filesSection').style.display = 'none';
-    }
-  });
-
-  // Importar arquivo JSON - AGORA SUPORTA O FORMATO COMPLETO
+  // --- ATUALIZAÇÃO DO SISTEMA DE IMPORTAÇÃO (O CORRETO PARA ONLINE) ---
   el('jsonInput').addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
@@ -1471,229 +1310,97 @@ function initializeMainSystem() {
     reader.onload = ev => {
       try {
         const jsonData = JSON.parse(ev.target.result);
-        
-        // Verificar se é o formato antigo (anomaly) ou novo (anomaly)
-        let anomalyData;
-        let filesToImport = [];
-        
-        if (jsonData.anomaly) {
-          // Formato novo: {anomaly: {...}, importantFiles: [...]}
-          anomalyData = jsonData.anomaly;
-          if (jsonData.importantFiles && Array.isArray(jsonData.importantFiles)) {
-            filesToImport = jsonData.importantFiles;
+        let listToImport = [];
+
+        // Suporte para importação de múltiplos (se for um array direto ou um database.json completo)
+        if (Array.isArray(jsonData)) {
+          listToImport = jsonData;
+        } else if (jsonData.anomalies && Array.isArray(jsonData.anomalies)) {
+          listToImport = jsonData.anomalies;
+          // Se houver arquivos importantes no JSON, importa eles também
+          if (jsonData.importantFiles) {
+            importantFiles = [...importantFiles, ...jsonData.importantFiles.filter(f => !importantFiles.some(ex => ex.id === f.id))];
+            localStorage.setItem('analog_files', JSON.stringify(importantFiles));
           }
         } else if (jsonData.id) {
-          // Formato antigo: apenas uma anomalia
-          anomalyData = jsonData;
-        } else {
-          throw new Error('Formato JSON inválido. Deve conter um objeto "anomaly" ou propriedades de anomalia.');
+          listToImport = [jsonData];
         }
-        
-        // Validar dados mínimos
-        if (!anomalyData.id) {
-          anomalyData.id = `ANOMALY_${Date.now()}`;
-        }
-        
-        // Verificar se já existe
-        const existingIndex = saved.findIndex(a => a.id === anomalyData.id);
-        if (existingIndex !== -1) {
-          if (confirm(`Anomalia "${anomalyData.id}" já existe. Deseja substituir?`)) {
-            saved[existingIndex] = anomalyData;
+
+        if (listToImport.length === 0) throw new Error('Formato inválido.');
+
+        listToImport.forEach(newAnom => {
+          const idx = saved.findIndex(s => s.id === newAnom.id);
+          if (idx !== -1) {
+            saved[idx] = newAnom;
           } else {
-            el('jsonInput').value = '';
-            return;
+            saved.push(newAnom);
           }
-        } else {
-          saved.push(anomalyData);
-        }
-        
-        // Importar arquivos importantes se houver
-        if (filesToImport.length > 0) {
-          filesToImport.forEach(fileData => {
-            // Verificar se o arquivo já existe
-            const existingFileIndex = importantFiles.findIndex(f => f.id === fileData.id);
-            if (existingFileIndex !== -1) {
-              // Substituir arquivo existente
-              importantFiles[existingFileIndex] = fileData;
-            } else {
-              // Adicionar novo arquivo
-              importantFiles.push(fileData);
-            }
-          });
-        }
-        
+        });
+
         localStorage.setItem('analog_entities', JSON.stringify(saved));
-        localStorage.setItem('analog_files', JSON.stringify(importantFiles));
         loadAnomalies(currentSearchTerm);
+        showNotification(`${listToImport.length} registro(s) processado(s).`);
         el('jsonInput').value = '';
-        
-        // Carregar a anomalia recém-importada
-        const index = existingIndex !== -1 ? existingIndex : saved.length - 1;
-        loadAnomaly(index);
-        
-        // Feedback visual
-        const filesMsg = filesToImport.length > 0 ? ` e ${filesToImport.length} arquivo(s) importante(s)` : '';
-        showNotification(`Anomalia importada com sucesso${filesMsg}!`);
-      } catch (error) {
-        alert('ERRO: Arquivo JSON inválido. ' + error.message);
+      } catch (err) {
+        alert('ERRO: JSON incompatível com o sistema C.C.O.');
       }
     };
     reader.readAsText(file);
   });
 
-  // Pesquisar anomalias
-  el('btnSearch').addEventListener('click', () => {
-    const searchTerm = el('searchInput').value;
-    loadAnomalies(searchTerm);
-    
-    // Se houver resultados, selecionar o primeiro
-    const filteredAnomalies = saved.filter(anomaly => 
-      searchTerm.trim() && (
-        (anomaly.id && anomaly.id.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (anomaly.threat && anomaly.threat.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (anomaly.visual && anomaly.visual.toLowerCase().includes(searchTerm.toLowerCase()))
-      )
-    );
-    
-    if (filteredAnomalies.length > 0) {
-      const firstAnomaly = filteredAnomalies[0];
-      const originalIndex = saved.findIndex(a => a.id === firstAnomaly.id);
-      loadAnomaly(originalIndex);
-    } else if (searchTerm.trim()) {
-      // Se não encontrou nada, limpar o dossiê
-      clearDossier();
-    }
+  // Marcar como arquivo importante
+  el('btnMarkFile').addEventListener('click', () => {
+    if (currentAnomalyIndex < 0) { showNotification('Selecione uma anomalia.'); return; }
+    const anomaly = saved[currentAnomalyIndex];
+    const file = {
+      id: 'FILE_' + Date.now(),
+      anomalyId: anomaly.id,
+      date: new Date().toISOString(),
+      label: `Registro - ${anomaly.id}`,
+      notes: `CLASSIFICAÇÃO: ${getSeverityText(anomaly.severity)}\nRELATO: ${anomaly.visual || 'N/A'}`
+    };
+    importantFiles.push(file);
+    localStorage.setItem('analog_files', JSON.stringify(importantFiles));
+    showNotification('Arquivo registrado no banco de dados.');
   });
 
-  el('searchInput').addEventListener('keypress', e => {
-    if (e.key === 'Enter') {
-      el('btnSearch').click();
-    }
-  });
-
-  // Limpar busca
-  el('btnClearSearch').addEventListener('click', () => {
-    el('searchInput').value = '';
-    loadAnomalies('');
-    if (saved.length > 0) {
-      loadAnomaly(0);
+  el('btnViewFiles').addEventListener('click', () => {
+    viewingFiles = !viewingFiles;
+    if (viewingFiles && currentAnomalyIndex >= 0) {
+      el('filesSection').style.display = 'block';
+      loadFilesForAnomaly(saved[currentAnomalyIndex].id);
     } else {
-      clearDossier();
+      el('filesSection').style.display = 'none';
+      viewingFiles = false;
     }
   });
 
-  // Limpar todos os registros
-  el('btnClearAll').addEventListener('click', () => {
-    if (saved.length === 0 && importantFiles.length === 0) {
-      showNotification('Nenhum registro para limpar.');
-      return;
-    }
-    
-    if (confirm('⚠️ ATENÇÃO: Esta ação irá apagar TODOS os registros de anomalias e ARQUIVOS. Esta ação é irreversível. Continuar?')) {
-      localStorage.removeItem('analog_entities');
-      localStorage.removeItem('analog_files');
-      saved = [];
-      importantFiles = [];
+  el('btnSearch').onclick = () => loadAnomalies(el('searchInput').value);
+  el('btnClearSearch').onclick = () => { el('searchInput').value = ''; loadAnomalies(''); };
+  el('btnClearAll').onclick = () => {
+    if (confirm('APAGAR TUDO?')) {
+      localStorage.clear();
+      saved = []; importantFiles = [];
       loadAnomalies('');
-      clearDossier();
-      showNotification('Todos os registros foram apagados.');
+      el('dossierContent').innerHTML = '<div class="empty-state"><h3>SISTEMA LIMPO</h3></div>';
     }
-  });
-
-  // Limpar visualização do dossiê
-  function clearDossier() {
-    el('dossierContent').innerHTML = `
-      <div class="empty-state">
-        <h3>NENHUMA ANOMALIA SELECIONADA</h3>
-        <p>Selecione uma anomalia da lista para visualizar seu dossiê completo.</p>
-        <p>Ou importe um arquivo JSON para adicionar novos registros.</p>
-      </div>
-    `;
-    currentAnomalyIndex = -1;
-    
-    // Remover efeitos
-    document.body.classList.remove('tremor-1', 'tremor-2', 'bio', 'glitch-active');
-    if (glitchInterval) {
-      clearInterval(glitchInterval);
-    }
-    
-    // Ocultar seção de arquivos
-    el('filesSection').style.display = 'none';
-    viewingFiles = false;
-    el('btnViewFiles').textContent = 'VER ARQUIVOS';
-    el('btnViewFiles').style.background = '';
-  }
+  };
 
   // Mostrar notificação
   function showNotification(message) {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-      position:fixed;
-      top:20px;
-      right:20px;
-      background:#141414;
-      border:1px solid #333;
-      padding:10px 15px;
-      color:#e8e8e8;
-      font-family:'Courier Prime',monospace;
-      font-size:0.9em;
-      z-index:10000;
-      box-shadow:0 0 10px rgba(0,0,0,0.5);
-      border-left:3px solid var(--glitch);
-      animation:slideIn 0.3s ease-out;
-    `;
-    
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-      }
-      @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-      }
-    `;
-    document.head.appendChild(style);
-    
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-      notification.style.animation = 'slideOut 0.3s ease-out';
-      setTimeout(() => {
-        document.body.removeChild(notification);
-        document.head.removeChild(style);
-      }, 300);
-    }, 3000);
+    const n = document.createElement('div');
+    n.style.cssText = `position:fixed;top:20px;right:20px;background:#141414;border:1px solid #333;padding:10px 15px;color:#e8e8e8;font-family:monospace;z-index:10000;border-left:3px solid var(--glitch);`;
+    n.textContent = message;
+    document.body.appendChild(n);
+    setTimeout(() => n.remove(), 3000);
   }
 
-  // Efeito de glitch aleatório leve
-  setInterval(() => {
-    if (!document.body.classList.contains('bio') && 
-        !document.body.classList.contains('tremor-1') && 
-        !document.body.classList.contains('tremor-2') && 
-        Math.random() > 0.9) {
-      document.body.classList.add('glitch-active');
-      setTimeout(() => {
-        document.body.classList.remove('glitch-active');
-      }, 100);
-    }
-  }, 3000);
-
-  // Inicializar sistema principal
   loadAnomalies('');
-  if (saved.length > 0) {
-    loadAnomaly(0);
-  }
+  if (saved.length > 0) loadAnomaly(0);
 }
 
-// INICIAR TELA DE CARREGAMENTO
 window.addEventListener('DOMContentLoaded', () => {
-  // Esconder o conteúdo principal inicialmente
   document.body.style.opacity = '0';
-  
-  // Iniciar a sequência de carregamento
   startLoadingScreen();
 });
 </script>
