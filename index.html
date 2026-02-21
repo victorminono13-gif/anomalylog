@@ -116,6 +116,33 @@
   display: inline-block;
 }
 
+.logo-text::before {
+  content: "◈";
+  position: absolute;
+  left: -30px;
+  color: var(--danger);
+  animation: spin 4s linear infinite;
+}
+
+.logo-text::after {
+  content: "◈";
+  position: absolute;
+  right: -30px;
+  color: var(--danger);
+  animation: spin 4s linear infinite reverse;
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.logo-subtitle {
+  color: #777;
+  font-size: 0.9em;
+  letter-spacing: 1px;
+  border-top: 1px solid #333;
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
 .loading-bar-container {
   width: 90%;
   max-width: 600px;
@@ -123,6 +150,14 @@
   background: #111;
   border: 1px solid #333;
   padding: 15px;
+}
+
+.loading-bar-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: #aaa;
+  font-size: 0.85em;
 }
 
 .loading-bar {
@@ -163,6 +198,14 @@
   text-shadow: 0 0 5px #000;
 }
 
+.loading-status {
+  text-align: center;
+  margin-top: 15px;
+  color: #aaa;
+  font-size: 0.9em;
+  min-height: 20px;
+}
+
 *{box-sizing:border-box}
 
 body{
@@ -171,12 +214,16 @@ body{
   background:var(--bg);
   color:var(--ink);
   font-family:'Courier Prime',monospace;
+  transition:background .5s;
   position:relative;
   overflow-x:hidden;
   opacity: 0;
+  animation: fadeIn 1s forwards;
+  animation-delay: 0.5s;
 }
 
-/* Efeito de glitch na página inteira */
+@keyframes fadeIn { to { opacity: 1; } }
+
 .glitch-overlay{
   position:fixed;
   top:0;
@@ -189,14 +236,17 @@ body{
   background:linear-gradient(rgba(0,255,204,0.03), transparent 30%),
             linear-gradient(90deg, rgba(255,0,0,0.02), rgba(0,255,204,0.02));
   mix-blend-mode:screen;
+  transition:opacity 0.3s;
 }
 
 body.glitch-active .glitch-overlay{ animation:fullGlitch 0.5s infinite; }
 
 @keyframes fullGlitch{
   0%{ opacity:0.1; transform:translateX(0); clip-path:inset(0 0 0 0); }
-  10%{ opacity:0.3; transform:translateX(-2px); clip-path:inset(20% 0 60% 0); }
-  20%{ opacity:0.1; transform:translateX(2px); clip-path:inset(60% 0 20% 0); }
+  2%{ opacity:0.3; transform:translateX(-2px); clip-path:inset(20% 0 60% 0); }
+  4%{ opacity:0.1; transform:translateX(2px); clip-path:inset(60% 0 20% 0); }
+  6%{ opacity:0.4; transform:translateX(-1px); clip-path:inset(10% 0 40% 0); }
+  8%{ opacity:0.1; transform:translateX(1px); clip-path:inset(40% 0 10% 0); }
   100%{ opacity:0.1; transform:translateX(0); clip-path:inset(0 0 0 0); }
 }
 
@@ -226,45 +276,82 @@ body.tremor-2{animation:tremor .35s infinite}
   border:1px solid #2a2a2a;
   padding:20px;
   box-shadow:0 0 15px rgba(0,0,0,.6);
+  position:relative;
 }
 
 h1,h2,h3{
   font-family:'VT323',monospace;
   color:var(--danger);
   text-transform:uppercase;
+  position:relative;
   margin-top:0;
 }
 
+.sidebar h1 { font-size:1.5em; margin-bottom:15px; text-align:center; }
 label{font-size:.85em;color:#aaa;display:block;margin-bottom:5px;}
 
 input,textarea,select,button{
   background:#050505;
   border:1px solid #333;
   color:var(--ink);
-  padding:8px;
+  padding:6px;
   font-family:'Courier Prime',monospace;
+  font-size:0.9em;
 }
 
-button{ cursor:pointer; transition:0.3s; }
+button{ cursor:pointer; transition:background 0.3s; white-space:nowrap; }
 button:hover{ background:#222; }
 
+.sidebar { display:flex; flex-direction:column; gap:15px; }
+.search-container, .import-container, .anomaly-list-container {
+  background:#111;
+  padding:12px;
+  border:1px solid #2a2a2a;
+}
+
+.search-box { display:flex; gap:8px; margin-top:5px; }
+.search-box input { flex:1; width:100%; }
+
 .anomaly-list {
-  max-height:300px;
+  flex:1;
   overflow-y:auto;
+  max-height:300px;
   border:1px solid #333;
-  background:#0a0a0a;
+  margin-top:5px;
 }
 
 .anomaly-item {
-  padding:10px;
-  border-bottom:1px solid #222;
+  padding:8px 10px;
+  border-bottom:1px solid #333;
   cursor:pointer;
+  transition:background 0.3s;
+  font-size:0.9em;
 }
 
 .anomaly-item:hover { background:#1a1a1a; }
-.anomaly-item.active { border-left:3px solid var(--glitch); background:#111; }
+.anomaly-item.active { background:#2a2a2a; border-left:3px solid var(--danger); }
 
-.anomaly-id { font-weight:bold; color:var(--glitch); }
+.anomaly-id { font-weight:bold; color:var(--glitch); margin-bottom:3px; }
+.anomaly-threat { font-size:0.75em; color:#aaa; }
+
+.results-info { font-size:0.8em; color:#777; margin-top:5px; text-align:center; }
+.controls, .file-controls { display:flex; gap:8px; margin-top:10px; flex-wrap: wrap; }
+.controls button, .file-controls button { flex:1; padding:6px; font-size:0.85em; }
+
+.file-controls button {
+  background:var(--file-bg);
+  border:1px solid var(--file-color);
+  color:var(--file-color);
+}
+
+#btnExport {
+    background: rgba(0, 255, 204, 0.1);
+    color: var(--glitch);
+    border-color: var(--glitch);
+}
+
+.glitch{ animation:glitch 1.4s infinite; color:var(--glitch); }
+@keyframes glitch{ 0%{opacity:1} 50%{opacity:.55} 100%{opacity:1} }
 
 .warning{
   border:1px solid var(--danger);
@@ -273,62 +360,82 @@ button:hover{ background:#222; }
   font-size:.75em;
   margin-top:10px;
   text-align:center;
+  animation:pulse 2s infinite;
 }
+
+@keyframes pulse{ 0%{opacity:0.6} 50%{opacity:1} 100%{opacity:0.6} }
 
 img{
   max-width:100%;
-  filter:brightness(0.7) contrast(1.2);
   border:1px solid #333;
+  filter:brightness(0.8) contrast(1.1);
+  transition:transform .4s, filter .3s;
 }
 
 body.bio img{
+  transform:scale(1.15);
   animation:imageGlitch .25s infinite;
-  transform:scale(1.05);
 }
 
 @keyframes imageGlitch{
-  0%{ clip-path:inset(10% 0 20% 0); filter:hue-rotate(90deg); }
-  50%{ clip-path:inset(20% 0 10% 0); filter:invert(1); }
-  100%{ clip-path:inset(0 0 0 0); }
+  0%{ clip-path:inset(0 0 0 0); filter:brightness(0.6) contrast(1.3) hue-rotate(10deg); }
+  20%{ clip-path:inset(10% 0 20% 0); filter:brightness(0.5) contrast(1.5) hue-rotate(15deg); }
+  100%{ clip-path:inset(0 0 0 0); filter:brightness(0.6) contrast(1.3) hue-rotate(10deg); }
 }
 
 .scanlines{
   position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:linear-gradient(rgba(18,16,16,0) 50%,rgba(0,0,0,0.1) 50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03));
-  background-size:100% 4px, 3px 100%;
-  pointer-events:none;
-  z-index:999;
+  top:0; left:0; width:100%; height:100%;
+  background:linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.1) 50%);
+  background-size:100% 4px;
+  pointer-events:none; z-index:999; opacity:0.3;
 }
 
-/* Novo Estilo para Botões do GitHub */
-.github-controls {
-  margin-top: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+.dossier-content { min-height:600px; }
+.dossier-section { margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid #2a2a2a; }
+.dossier-section p { line-height:1.5; white-space:pre-wrap; margin:8px 0; font-size:0.95em; }
+.empty-state { text-align:center; color:#777; padding:40px 20px; font-size:0.9em; }
+
+.file-section {
+  border:1px solid var(--file-color);
+  padding:15px; margin:15px 0;
+  background:rgba(0,153,255,0.05);
 }
 
-#btnExport {
-  background: rgba(0, 255, 204, 0.1);
-  color: var(--glitch);
-  border: 1px solid var(--glitch);
+.file-item {
+  padding:8px 10px;
+  border-bottom:1px dashed rgba(0,153,255,0.3);
+  display:flex; justify-content:space-between; align-items:center;
+  cursor:pointer;
 }
+
+.file-label { font-weight:bold; color:var(--file-color); font-size:0.9em; }
 </style>
 </head>
 
 <body>
 <div id="loading-screen">
-  <div class="loading-logo"><div class="logo-text">SISTEMA C.C.O INICIALIZANDO...</div></div>
+  <div class="loading-logo">
+    <div class="logo-text">arquivos de anomalias da C.C.O</div>
+    <div class="logo-subtitle">CENTRAL DE CONTENÇÃO DE OBJETOS ANÔMALOS</div>
+  </div>
   <div class="console-container">
-    <div class="console-header"><div class="console-title">TERMINAL DE ACESSO</div><div id="console-time"></div></div>
+    <div class="console-header">
+      <div class="console-title">SISTEMA C.C.O - TERMINAL DE ACESSO</div>
+      <div class="console-time" id="console-time"></div>
+    </div>
     <div class="console-content" id="console-content"></div>
   </div>
   <div class="loading-bar-container">
-    <div class="loading-bar"><div class="loading-progress" id="loading-progress"></div><div class="loading-percentage" id="loading-percentage">0%</div></div>
+    <div class="loading-bar-info">
+      <span>Inicializando Sistema C.C.O</span>
+      <span id="loading-stage">Sincronizando banco de dados...</span>
+    </div>
+    <div class="loading-bar">
+      <div class="loading-progress" id="loading-progress"></div>
+      <div class="loading-percentage" id="loading-percentage">0%</div>
+    </div>
+    <div class="loading-status" id="loading-status">Buscando database.json no servidor...</div>
   </div>
 </div>
 
@@ -336,159 +443,310 @@ body.bio img{
 <div class="glitch-overlay"></div>
 
 <div class="container">
-  <div class="paper sidebar">
-    <h1>CONSULTA</h1>
-    <label>PESQUISAR ID</label>
-    <input type="text" id="searchInput" placeholder="Digite o ID..." style="width:100%; margin-bottom:10px;">
-    
-    <label>LISTA DE REGISTROS</label>
-    <div class="anomaly-list" id="anomalyList"></div>
-    
-    <div class="github-controls">
-      <button id="btnExport">EXPORTAR PARA GITHUB</button>
-      <label style="margin-top:10px">IMPORTAR LOCAL</label>
-      <input type="file" id="jsonInput" accept="application/json">
+<div class="paper sidebar">
+  <h1>CONSULTA DE ENTIDADES</h1>
+  
+  <div class="import-container">
+    <label>SISTEMA DE ARQUIVOS</label>
+    <input type="file" id="jsonInput" accept="application/json">
+    <div class="controls">
+        <button id="btnExport">EXPORTAR PARA GITHUB</button>
     </div>
-
-    <div class="warning">CUIDADO: ARQUIVOS COM RASTREAMENTO ATIVO.</div>
   </div>
-
-  <div class="paper">
-    <div id="dossierContent">
-      <h2>DOSSIÊ CONFIDENCIAL</h2>
-      <p style="color:#777">Selecione uma entidade para descriptografar os dados.</p>
+  
+  <div class="search-container">
+    <label>PESQUISAR ANOMALIAS</label>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Nome, ID ou classe...">
+      <button id="btnSearch">🔍</button>
     </div>
+    <div class="results-info" id="resultsInfo">Total: 0 anomalias</div>
+  </div>
+  
+  <div class="anomaly-list-container">
+    <label>ANOMALIAS REGISTRADAS</label>
+    <div class="anomaly-list" id="anomalyList"></div>
+  </div>
+  
+  <div class="controls">
+    <button id="btnClearSearch">LIMPAR BUSCA</button>
+    <button id="btnClearAll">LIMPAR TUDO</button>
+  </div>
+  
+  <div class="file-controls">
+    <button id="btnMarkFile">MARCAR COMO IMPORTANTE</button>
+    <button id="btnViewFiles">VER ARQUIVOS</button>
+  </div>
+  
+  <div class="warning">
+    ATENÇÃO: Terminal de consulta apenas.<br>
+    NÃO ENCARAR. NÃO RESPONDER.
   </div>
 </div>
 
-<script>
-// --- CONFIGURAÇÃO E LÓGICA DO SISTEMA ---
-let saved = JSON.parse(localStorage.getItem('analog_entities') || '[]');
-let currentAnomalyIndex = -1;
-const el = id => document.getElementById(id);
-
-// 1. CARREGAR DO GITHUB (DATABASE.JSON)
-async function syncWithGithub() {
-  try {
-    // Tenta ler o arquivo database.json do repositório
-    const response = await fetch('database.json');
-    if (response.ok) {
-      const data = await response.json();
-      if (data.anomalies) {
-        // Mesclar dados (prioriza o que está no servidor)
-        const map = new Map();
-        saved.forEach(a => map.set(a.id, a));
-        data.anomalies.forEach(a => map.set(a.id, a));
-        saved = Array.from(map.values());
-        localStorage.setItem('analog_entities', JSON.stringify(saved));
-        updateList();
-        console.log("Sincronizado com database.json");
-      }
-    }
-  } catch (e) { console.warn("database.json não encontrado no repositório."); }
-}
-
-// 2. EXPORTAR PARA ATUALIZAR O REPOSITÓRIO
-el('btnExport').onclick = () => {
-  const data = { anomalies: saved, lastUpdate: new Date().toISOString() };
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'database.json';
-  a.click();
-  alert("Arquivo baixado. Agora faça o upload deste 'database.json' para o seu GitHub para atualizar o site.");
-};
-
-// 3. INTERFACE E LISTA
-function updateList(filter = '') {
-  const list = el('anomalyList');
-  list.innerHTML = '';
-  const filtered = saved.filter(a => a.id.toLowerCase().includes(filter.toLowerCase()));
-  
-  filtered.forEach((a, i) => {
-    const item = document.createElement('div');
-    item.className = 'anomaly-item';
-    item.innerHTML = `<div class="anomaly-id">${a.id}</div><small>${a.threat || 'Nível Desconhecido'}</small>`;
-    item.onclick = () => loadAnomaly(saved.indexOf(a));
-    list.appendChild(item);
-  });
-}
-
-function loadAnomaly(index) {
-  currentAnomalyIndex = index;
-  const a = saved[index];
-  const content = el('dossierContent');
-  
-  // Limpar efeitos
-  document.body.className = '';
-  if(a.severity === 'fatal') document.body.classList.add('tremor-2');
-  if(a.severity === 'biologico') document.body.classList.add('bio');
-
-  content.innerHTML = `
-    <h2>${a.id}</h2>
-    ${a.image ? `<img src="${a.image}">` : ''}
-    <div style="margin-top:15px; border-top:1px solid #333; padding-top:15px;">
-      <p><strong>CLASSIFICAÇÃO:</strong> ${a.threat || '???'}</p>
-      <p><strong>ESTADO:</strong> ${a.severity || 'Estável'}</p>
-      <p><strong>RELATO:</strong><br>${a.visual || 'Sem descrição visual.'}</p>
-      <p><strong>COMPORTAMENTO:</strong><br>${a.behavior || 'Não documentado.'}</p>
+<div class="paper">
+<div class="dossier-content">
+  <h2>DOSSIÊ CONFIDENCIAL</h2>
+  <img id="pImage" style="display:none; margin-bottom:20px; max-height:250px; object-fit:contain;">
+  <div id="dossierContent">
+    <div class="empty-state">
+      <h3>NENHUMA ANOMALIA SELECIONADA</h3>
     </div>
-  `;
-}
+  </div>
+  <div id="filesSection" style="display:none; margin-top:30px;">
+    <div class="file-section">
+      <h3>ARQUIVOS IMPORTANTES</h3>
+      <div id="filesList"></div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
 
-// 4. IMPORTAÇÃO DE ARQUIVO
-el('jsonInput').onchange = (e) => {
-  const file = e.target.files[0];
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      const newAnomalies = data.anomalies || [data];
-      saved = [...saved, ...newAnomalies.filter(n => !saved.find(s => s.id === n.id))];
-      localStorage.setItem('analog_entities', JSON.stringify(saved));
-      updateList();
-      alert("Dados carregados com sucesso!");
-    } catch(err) { alert("Erro ao ler JSON."); }
-  };
-  reader.readAsText(file);
-};
-
-el('searchInput').oninput = (e) => updateList(e.target.value);
-
-// 5. TELA DE CARREGAMENTO (SIMULADA)
-function startLoading() {
-  const consoleEl = el('console-content');
-  const messages = [
-    "> Acessando rede C.C.O...",
-    "> Verificando database.json...",
-    "[OK] Conexão segura estabelecida.",
-    "> Sincronizando registros..."
+<script>
+// FUNÇÕES DA TELA DE CARREGAMENTO
+function startLoadingScreen() {
+  const consoleEl = document.getElementById('console-content');
+  const progressBar = document.getElementById('loading-progress');
+  const percentageEl = document.getElementById('loading-percentage');
+  const stageEl = document.getElementById('loading-stage');
+  const consoleTimeEl = document.getElementById('console-time');
+  
+  function updateConsoleTime() {
+    const now = new Date();
+    consoleTimeEl.textContent = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR')}`;
+  }
+  updateConsoleTime();
+  setInterval(updateConsoleTime, 1000);
+  
+  const consoleMessages = [
+    {text: "> Inicializando Terminal...", delay: 200, type: "prompt"},
+    {text: "> Verificando database.json no servidor GitHub...", delay: 500, type: "system"},
+    {text: "[OK] Conexão com repositório estabelecida", delay: 800, type: "success"},
+    {text: "> Sincronizando registros locais e remotos...", delay: 1200, type: "prompt"},
+    {text: "> Sistema C.C.O pronto.", delay: 1800, type: "success"}
   ];
   
-  let i = 0;
-  const interval = setInterval(() => {
-    if(i < messages.length) {
-      const p = document.createElement('div');
-      p.className = 'console-line success';
-      p.textContent = messages[i];
-      consoleEl.appendChild(p);
-      el('loading-progress').style.width = ((i+1) * 25) + '%';
-      el('loading-percentage').textContent = ((i+1) * 25) + '%';
-      i++;
-    } else {
-      clearInterval(interval);
-      setTimeout(() => {
-        el('loading-screen').style.display = 'none';
-        document.body.style.opacity = '1';
-        syncWithGithub();
-        updateList();
-      }, 1000);
+  let currentMessage = 0;
+  function addConsoleMessage() {
+    if (currentMessage < consoleMessages.length) {
+      const msg = consoleMessages[currentMessage];
+      const line = document.createElement('div');
+      line.className = `console-line ${msg.type}`;
+      line.textContent = msg.text;
+      consoleEl.appendChild(line);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+      currentMessage++;
+      setTimeout(addConsoleMessage, msg.delay);
     }
-  }, 600);
+  }
+
+  let progress = 0;
+  const int = setInterval(() => {
+    progress += Math.floor(Math.random() * 10) + 5;
+    if (progress >= 100) {
+      progress = 100;
+      clearInterval(int);
+      setTimeout(finishLoading, 500);
+    }
+    progressBar.style.width = `${progress}%`;
+    percentageEl.textContent = `${progress}%`;
+  }, 150);
+
+  function finishLoading() {
+    const loadingScreen = document.getElementById('loading-screen');
+    loadingScreen.style.opacity = '0';
+    setTimeout(() => {
+      loadingScreen.style.display = 'none';
+      document.body.style.opacity = '1';
+      initializeMainSystem();
+    }, 800);
+  }
+  
+  addConsoleMessage();
 }
 
-window.onload = startLoading;
+// INICIALIZAÇÃO DO SISTEMA PRINCIPAL
+function initializeMainSystem() {
+  let saved = JSON.parse(localStorage.getItem('analog_entities') || '[]');
+  let importantFiles = JSON.parse(localStorage.getItem('analog_files') || '[]');
+  const glitchOverlay = document.querySelector('.glitch-overlay');
+  let glitchInterval;
+  let currentAnomalyIndex = -1;
+  let currentSearchTerm = '';
+  let viewingFiles = false;
+
+  const el = id => document.getElementById(id);
+
+  // --- NOVA FUNÇÃO: CARREGAR DADOS DO GITHUB (database.json) ---
+  async function loadDataFromRepo() {
+    try {
+      const response = await fetch('database.json');
+      if (response.ok) {
+        const repoData = await response.json();
+        if (repoData && Array.isArray(repoData.anomalies)) {
+          const mergeMap = new Map();
+          // Prioridade para o que está no Repo, depois LocalStorage
+          repoData.anomalies.forEach(a => mergeMap.set(a.id, a));
+          saved.forEach(a => mergeMap.set(a.id, a));
+          
+          saved = Array.from(mergeMap.values());
+          localStorage.setItem('analog_entities', JSON.stringify(saved));
+          
+          if (repoData.importantFiles) {
+            importantFiles = repoData.importantFiles;
+            localStorage.setItem('analog_files', JSON.stringify(importantFiles));
+          }
+          
+          showNotification('Sincronizado com Banco de Dados Global.');
+          loadAnomalies('');
+          if (saved.length > 0) loadAnomaly(0);
+        }
+      }
+    } catch (e) {
+      console.warn("Aguardando upload do database.json no GitHub...");
+    }
+  }
+
+  // --- NOVA FUNÇÃO: EXPORTAR ---
+  function exportDatabase() {
+    const dataToExport = {
+      anomalies: saved,
+      importantFiles: importantFiles,
+      exportDate: new Date().toISOString()
+    };
+    
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToExport, null, 2));
+    const dlAnchor = document.createElement('a');
+    dlAnchor.setAttribute("href", dataStr);
+    dlAnchor.setAttribute("download", "database.json");
+    document.body.appendChild(dlAnchor);
+    dlAnchor.click();
+    dlAnchor.remove();
+    showNotification('Base baixada. Suba o arquivo database.json no GitHub.');
+  }
+
+  el('btnExport').addEventListener('click', exportDatabase);
+
+  // Iniciar carregamento automático do GitHub
+  loadDataFromRepo();
+
+  // --- FUNÇÕES DE INTERFACE ---
+  function loadAnomalies(searchTerm = '') {
+    const anomalyList = el('anomalyList');
+    currentSearchTerm = searchTerm;
+    
+    let filtered = saved;
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filtered = saved.filter(a => 
+        (a.id && a.id.toLowerCase().includes(term)) || 
+        (a.threat && a.threat.toLowerCase().includes(term))
+      );
+    }
+    
+    el('resultsInfo').textContent = `Total: ${filtered.length} anomalias`;
+    anomalyList.innerHTML = '';
+    
+    filtered.forEach((anomaly) => {
+      const originalIndex = saved.findIndex(a => a.id === anomaly.id);
+      const item = document.createElement('div');
+      item.className = 'anomaly-item';
+      if (originalIndex === currentAnomalyIndex) item.classList.add('active');
+      
+      item.innerHTML = `
+        <div class="anomaly-id">${anomaly.id || 'SEM_ID'}</div>
+        <div class="anomaly-threat">${anomaly.threat || 'NÃO CLASSIFICADA'}</div>
+      `;
+      
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.anomaly-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        loadAnomaly(originalIndex);
+      });
+      anomalyList.appendChild(item);
+    });
+  }
+
+  function loadAnomaly(index) {
+    if (index < 0 || index >= saved.length) return;
+    const anomaly = saved[index];
+    currentAnomalyIndex = index;
+    
+    const dossier = el('dossierContent');
+    dossier.innerHTML = '';
+
+    if (anomaly.image) {
+      const img = document.createElement('img');
+      img.src = anomaly.image;
+      img.style.display = 'block';
+      img.style.marginBottom = '20px';
+      dossier.appendChild(img);
+    }
+
+    const info = `
+      <div class="dossier-section">
+        <p><strong>ID:</strong> ${anomaly.id}</p>
+        <p><strong>AMEAÇA:</strong> <span class="glitch">${anomaly.threat || '---'}</span></p>
+        <p><strong>ESTADO:</strong> ${anomaly.severity || 'Estável'}</p>
+      </div>
+      <div class="dossier-section"><h3>RELATO VISUAL</h3><p>${anomaly.visual || 'Dados corrompidos'}</p></div>
+      <div class="dossier-section"><h3>COMPORTAMENTO</h3><p>${anomaly.behavior || 'Desconhecido'}</p></div>
+    `;
+    dossier.innerHTML += info;
+    applySeverityEffects(anomaly.severity);
+  }
+
+  function applySeverityEffects(severity) {
+    document.body.classList.remove('tremor-1', 'tremor-2', 'bio', 'glitch-active');
+    if (glitchInterval) clearInterval(glitchInterval);
+    
+    if (severity === 'fatal' || severity === 'irreversivel') {
+        document.body.classList.add('tremor-1');
+        glitchInterval = setInterval(() => {
+            if (Math.random() > 0.8) document.body.classList.toggle('glitch-active');
+        }, 500);
+    }
+    if (severity === 'biologico') document.body.classList.add('bio', 'glitch-active');
+  }
+
+  // --- EVENTOS ---
+  el('btnSearch').addEventListener('click', () => loadAnomalies(el('searchInput').value));
+  el('btnClearAll').addEventListener('click', () => {
+    if(confirm('Apagar TUDO?')) {
+        localStorage.clear(); saved = []; loadAnomalies();
+        showNotification('Memória local limpa.');
+    }
+  });
+
+  el('jsonInput').addEventListener('change', e => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        const anomaly = data.anomaly || data;
+        saved.push(anomaly);
+        localStorage.setItem('analog_entities', JSON.stringify(saved));
+        loadAnomalies();
+        showNotification('Anomalia importada.');
+      } catch (err) { alert('Erro no JSON'); }
+    };
+    reader.readAsText(file);
+  });
+
+  function showNotification(msg) {
+    const n = document.createElement('div');
+    n.style.cssText = `position:fixed; top:20px; right:20px; background:#111; border-left:3px solid var(--glitch); padding:10px; z-index:99999; font-size:0.8em;`;
+    n.textContent = msg;
+    document.body.appendChild(n);
+    setTimeout(() => n.remove(), 3000);
+  }
+
+  loadAnomalies();
+}
+
+window.addEventListener('DOMContentLoaded', startLoadingScreen);
 </script>
 </body>
 </html>
