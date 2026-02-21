@@ -936,7 +936,6 @@ function initializeMainSystem() {
 
   const el = id => document.getElementById(id);
 
-  // Carregar anomalias salvas
   function loadAnomalies(searchTerm = '') {
     const anomalyList = el('anomalyList');
     currentSearchTerm = searchTerm;
@@ -967,7 +966,6 @@ function initializeMainSystem() {
     
     filteredAnomalies.forEach((anomaly) => {
       const originalIndex = saved.findIndex(a => a.id === anomaly.id);
-      
       const item = document.createElement('div');
       item.className = 'anomaly-item';
       if (originalIndex === currentAnomalyIndex) item.classList.add('active');
@@ -981,17 +979,13 @@ function initializeMainSystem() {
         document.querySelectorAll('.anomaly-item').forEach(i => i.classList.remove('active'));
         item.classList.add('active');
         loadAnomaly(originalIndex);
-        if (viewingFiles) loadFilesForAnomaly(anomaly.id);
       });
-      
       anomalyList.appendChild(item);
     });
   }
 
-  // Carregar uma anomalia específica
   function loadAnomaly(index) {
     if (index < 0 || index >= saved.length) return;
-    
     const anomaly = saved[index];
     currentAnomalyIndex = index;
     const dossierContent = document.createElement('div');
@@ -1015,43 +1009,47 @@ function initializeMainSystem() {
     `;
     dossierContent.appendChild(infoSection);
     
-    const sections = [
-      {title: "RELATO VISUAL", content: anomaly.visual},
-      {title: "COMPORTAMENTO", content: anomaly.behavior},
-      {title: "EFEITOS DOCUMENTADOS", content: convertBinaryToText(anomaly.effects || '')},
-      {title: "PROTOCOLOS DE CONTENÇÃO", content: anomaly.containment}
-    ];
+    if (anomaly.visual) {
+      const s = document.createElement('div');
+      s.className = 'dossier-section';
+      s.innerHTML = `<h3>RELATO VISUAL</h3><p>${anomaly.visual}</p>`;
+      dossierContent.appendChild(s);
+    }
 
-    sections.forEach(s => {
-      if(s.content) {
-        const div = document.createElement('div');
-        div.className = 'dossier-section';
-        div.innerHTML = `<h3>${s.title}</h3><p>${s.content}</p>`;
-        dossierContent.appendChild(div);
-      }
-    });
+    if (anomaly.behavior) {
+      const s = document.createElement('div');
+      s.className = 'dossier-section';
+      s.innerHTML = `<h3>COMPORTAMENTO</h3><p>${anomaly.behavior}</p>`;
+      dossierContent.appendChild(s);
+    }
+
+    if (anomaly.effects) {
+      const s = document.createElement('div');
+      s.className = 'dossier-section';
+      s.innerHTML = `<h3>EFEITOS</h3><p>${convertBinaryToText(anomaly.effects)}</p>`;
+      dossierContent.appendChild(s);
+    }
+
+    if (anomaly.containment) {
+      const s = document.createElement('div');
+      s.className = 'dossier-section';
+      s.innerHTML = `<h3>CONTENÇÃO</h3><p>${anomaly.containment}</p>`;
+      dossierContent.appendChild(s);
+    }
     
     el('dossierContent').innerHTML = '';
     el('dossierContent').appendChild(dossierContent);
     applySeverityEffects(anomaly.severity);
-    
-    if (viewingFiles) {
-      loadFilesForAnomaly(anomaly.id);
-      el('filesSection').style.display = 'block';
-    } else {
-      el('filesSection').style.display = 'none';
-    }
+    if (viewingFiles) loadFilesForAnomaly(anomaly.id);
   }
 
   function convertBinaryToText(binary) {
-    if(!binary) return '';
     try {
-      const binaryString = binary.replace(/\s+/g, '');
-      if (!binaryString.match(/^[01]+$/)) return binary;
-      
+      const clean = binary.replace(/\s+/g, '');
+      if (!clean.match(/^[01]+$/)) return binary;
       let text = '';
-      for (let i = 0; i < binaryString.length; i += 8) {
-        const byte = binaryString.substr(i, 8);
+      for (let i = 0; i < clean.length; i += 8) {
+        const byte = clean.substr(i, 8);
         if (byte.length === 8) text += String.fromCharCode(parseInt(byte, 2));
       }
       return text;
@@ -1059,7 +1057,7 @@ function initializeMainSystem() {
   }
 
   function getSeverityText(severity) {
-    const map = {'irreversivel': 'Irreversível', 'fatal': 'Fatal', 'biologico': 'Biologicamente destrutivo'};
+    const map = { 'irreversivel': 'Irreversível', 'fatal': 'Fatal', 'biologico': 'Biologicamente destrutivo' };
     return map[severity] || severity || '---';
   }
 
@@ -1070,144 +1068,95 @@ function initializeMainSystem() {
     if (severity === 'irreversivel') {
       document.body.classList.add('tremor-1');
       glitchInterval = setInterval(() => { if (Math.random() > 0.7) { document.body.classList.add('glitch-active'); setTimeout(() => document.body.classList.remove('glitch-active'), 200); } }, 1000);
-    }
-    if (severity === 'fatal') {
+    } else if (severity === 'fatal') {
       document.body.classList.add('tremor-2');
       glitchInterval = setInterval(() => { if (Math.random() > 0.5) { document.body.classList.add('glitch-active'); setTimeout(() => document.body.classList.remove('glitch-active'), 300); } }, 800);
-    }
-    if (severity === 'biologico') {
+    } else if (severity === 'biologico') {
       document.body.classList.add('bio', 'glitch-active');
-      glitchInterval = setInterval(() => { if (Math.random() > 0.8) { glitchOverlay.style.opacity = '0.6'; setTimeout(() => glitchOverlay.style.opacity = '0.3', 50); } }, 100);
     }
   }
 
   function loadFilesForAnomaly(anomalyId) {
     const filesList = el('filesList');
     const anomalyFiles = importantFiles.filter(f => f.anomalyId === anomalyId);
-    
     if (anomalyFiles.length === 0) {
-      filesList.innerHTML = '<div class="empty-state"><p>Nenhum arquivo importante.</p></div>';
+      filesList.innerHTML = '<div class="empty-state"><p>Nenhum arquivo encontrado.</p></div>';
       return;
     }
-    
     filesList.innerHTML = '';
-    anomalyFiles.forEach((file, index) => {
-      const fileItem = document.createElement('div');
-      fileItem.className = 'file-item';
-      fileItem.innerHTML = `
-        <div class="file-label">${file.label || `Arquivo ${index + 1}`}</div>
-        <div class="file-info"><div class="file-date">${new Date(file.date).toLocaleDateString('pt-BR')}</div></div>
-      `;
-      fileItem.addEventListener('click', () => viewFileDetails(file));
-      filesList.appendChild(fileItem);
+    anomalyFiles.forEach((file) => {
+      const item = document.createElement('div');
+      item.className = 'file-item';
+      item.innerHTML = `<div class="file-label">${file.label}</div>`;
+      item.onclick = () => alert(file.notes);
+      filesList.appendChild(item);
     });
   }
 
-  function viewFileDetails(file) {
-    const modal = document.createElement('div');
-    modal.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10000;`;
-    modal.innerHTML = `
-      <div style="background:#141414; border:1px solid var(--file-color); padding:20px; max-width:500px; width:90%; max-height:80vh; overflow-y:auto; font-family:'Courier Prime',monospace; color:#e8e8e8;">
-        <div style="color:var(--file-color); font-family:'VT323',monospace; font-size:1.2em; border-bottom:1px solid var(--file-color); margin-bottom:10px;">📁 ARQUIVO IMPORTANTE</div>
-        <div style="white-space:pre-wrap; font-size:0.9em; line-height:1.6;">${file.notes}</div>
-        <button id="closeModal" style="margin-top:20px; width:100%; padding:8px; background:#333; color:white; cursor:pointer;">FECHAR</button>
-      </div>
-    `;
-    document.body.appendChild(modal);
-    el('closeModal').onclick = () => modal.remove();
-  }
-
-  // --- ATUALIZAÇÃO DO SISTEMA DE ARQUIVOS (IMPORTAR Z1999) ---
+  // CORREÇÃO DO SISTEMA DE IMPORTAÇÃO PARA O NOVO FORMATO
   el('jsonInput').addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
-    
     const reader = new FileReader();
     reader.onload = ev => {
       try {
         const jsonData = JSON.parse(ev.target.result);
         let anomalyData = null;
-        let filesData = [];
+        let filesToImport = [];
 
-        // Verifica o formato do arquivo (Z1999 usa a chave "anomaly" no singular)
+        // Verifica se é o formato "COMPLETO" fornecido (Z1999)
         if (jsonData.anomaly) {
-          anomalyData = jsonData.anomaly;
-          if (jsonData.importantFiles) filesData = jsonData.importantFiles;
+            anomalyData = jsonData.anomaly;
+            if (jsonData.importantFiles) filesToImport = jsonData.importantFiles;
         } else if (jsonData.id) {
-          anomalyData = jsonData;
+            anomalyData = jsonData;
+        } else {
+            throw new Error("Formato não reconhecido.");
         }
 
-        if (!anomalyData) throw new Error("Formato inválido.");
-
-        // Atualizar ou Inserir Anomalia
+        // Salva Anomalia
         const existingIdx = saved.findIndex(a => a.id === anomalyData.id);
-        if (existingIdx !== -1) saved[existingIdx] = anomalyData;
-        else saved.push(anomalyData);
+        if (existingIdx !== -1) {
+            saved[existingIdx] = anomalyData;
+        } else {
+            saved.push(anomalyData);
+        }
 
-        // Mesclar Arquivos Importantes
-        if (filesData.length > 0) {
-          filesData.forEach(f => {
+        // Salva Arquivos Importantes (Merge)
+        filesToImport.forEach(f => {
             const fIdx = importantFiles.findIndex(item => item.id === f.id);
             if (fIdx !== -1) importantFiles[fIdx] = f;
             else importantFiles.push(f);
-          });
-        }
+        });
 
         localStorage.setItem('analog_entities', JSON.stringify(saved));
         localStorage.setItem('analog_files', JSON.stringify(importantFiles));
         
         loadAnomalies(currentSearchTerm);
         loadAnomaly(saved.findIndex(a => a.id === anomalyData.id));
-        showNotification('Sincronização C.C.O completa.');
+        showNotification("REGISTRO IMPORTADO COM SUCESSO.");
         el('jsonInput').value = '';
       } catch (err) {
-        alert('ERRO: Estrutura de arquivo não reconhecida.');
+        alert("ERRO CRÍTICO NA LEITURA DO ARQUIVO.");
       }
     };
     reader.readAsText(file);
   });
 
-  el('btnMarkFile').onclick = () => {
-    if (currentAnomalyIndex < 0) return;
-    const a = saved[currentAnomalyIndex];
-    const newFile = {
-      id: 'FILE_' + Date.now(),
-      anomalyId: a.id,
-      date: new Date().toISOString(),
-      label: 'Arquivo - ' + a.id,
-      notes: `DADOS EXTRAÍDOS:\nID: ${a.id}\nAMEAÇA: ${a.threat}\nDESCRIÇÃO: ${a.visual}`
-    };
-    importantFiles.push(newFile);
-    localStorage.setItem('analog_files', JSON.stringify(importantFiles));
-    showNotification('Arquivo importante registrado.');
-    if(viewingFiles) loadFilesForAnomaly(a.id);
-  };
-
-  el('btnViewFiles').onclick = () => {
-    viewingFiles = !viewingFiles;
-    if (viewingFiles && currentAnomalyIndex >= 0) {
-      el('filesSection').style.display = 'block';
-      loadFilesForAnomaly(saved[currentAnomalyIndex].id);
-    } else {
-      el('filesSection').style.display = 'none';
-      viewingFiles = false;
-    }
-  };
-
   el('btnSearch').onclick = () => loadAnomalies(el('searchInput').value);
   el('btnClearSearch').onclick = () => { el('searchInput').value = ''; loadAnomalies(''); };
-  el('btnClearAll').onclick = () => { if(confirm('APAGAR TUDO?')){ localStorage.clear(); location.reload(); }};
+  el('btnClearAll').onclick = () => { if(confirm("APAGAR TUDO?")) { localStorage.clear(); location.reload(); } };
+  el('btnViewFiles').onclick = () => { viewingFiles = !viewingFiles; el('filesSection').style.display = viewingFiles ? 'block' : 'none'; if(viewingFiles && currentAnomalyIndex !== -1) loadFilesForAnomaly(saved[currentAnomalyIndex].id); };
 
-  function showNotification(m) {
+  function showNotification(msg) {
     const n = document.createElement('div');
-    n.style.cssText = `position:fixed;top:20px;right:20px;background:#141414;border:1px solid #333;padding:10px 15px;color:white;z-index:10000;border-left:3px solid var(--glitch);font-family:monospace;`;
-    n.textContent = m;
+    n.style.cssText = "position:fixed;top:20px;right:20px;background:#141414;border:1px solid #00ffcc;padding:10px;color:#fff;z-index:10000;font-family:monospace;";
+    n.textContent = msg;
     document.body.appendChild(n);
     setTimeout(() => n.remove(), 3000);
   }
 
   loadAnomalies('');
-  if (saved.length > 0) loadAnomaly(0);
 }
 
 window.addEventListener('DOMContentLoaded', () => {
