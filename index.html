@@ -3,11 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ARQUIVO RESTRITO — CONSULTA DE ENTIDADES</title>
+<title>ARQUIVO RESTRITO — CONSULTA DE ENTIDADES (ONLINE)</title>
 
 <link href="https://fonts.googleapis.com/css2?family=VT323&family=Courier+Prime&display=swap" rel="stylesheet">
 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, set, onValue, remove, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  // --- CONFIGURAÇÃO DO FIREBASE ---
+  // SUBSTITUA ESTA PARTE PELAS CHAVES QUE VOCÊ PEGA NO SITE DO FIREBASE
+  const firebaseConfig = {
+    apiKey: "SUA_API_KEY",
+    authDomain: "SEU_PROJETO.firebaseapp.com",
+    databaseURL: "https://SEU_PROJETO-default-rtdb.firebaseio.com",
+    projectId: "SEU_PROJETO_ID",
+    storageBucket: "SEU_PROJETO.appspot.com",
+    messagingSenderId: "SEU_SENDER_ID",
+    appId: "SEU_APP_ID"
+  };
+
+  // Inicializa o Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // Expõe as funções do banco de dados para o escopo global (para o resto do script usar)
+  window.db = db;
+  window.dbRef = ref;
+  window.dbSet = set;
+  window.dbOnValue = onValue;
+  window.dbRemove = remove;
+  window.dbChild = child;
+  
+  // Sinaliza que o Firebase carregou
+  window.firebaseLoaded = true;
+</script>
+
 <style>
+/* SEU CSS ORIGINAL PERMANECE INALTERADO */
 :root{
   --bg:#0b0b0b;
   --paper:#141414;
@@ -726,7 +759,6 @@ input[type="file"] {
 </head>
 
 <body>
-<!-- Tela de Carregamento -->
 <div id="loading-screen">
   <div class="loading-logo">
     <div class="logo-text">arquivos de anomalias da C.C.O</div>
@@ -739,8 +771,7 @@ input[type="file"] {
       <div class="console-time" id="console-time"></div>
     </div>
     <div class="console-content" id="console-content">
-      <!-- Conteúdo do console será gerado dinamicamente -->
-    </div>
+      </div>
   </div>
   
   <div class="loading-bar-container">
@@ -765,8 +796,9 @@ input[type="file"] {
   <h1>CONSULTA DE ENTIDADES</h1>
   
   <div class="import-container">
-    <label>IMPORTAR ARQUIVO JSON</label>
+    <label>ENVIAR ARQUIVO PARA BASE DE DADOS</label>
     <input type="file" id="jsonInput" accept="application/json">
+    <div style="font-size:0.7em; color:#666; margin-top:5px;">* Arquivo compartilhado com todos os terminais</div>
   </div>
   
   <div class="search-container">
@@ -781,13 +813,12 @@ input[type="file"] {
   <div class="anomaly-list-container">
     <label>ANOMALIAS REGISTRADAS</label>
     <div class="anomaly-list" id="anomalyList">
-      <!-- Lista de anomalias será carregada aqui -->
-    </div>
+      </div>
   </div>
   
   <div class="controls">
     <button id="btnClearSearch">LIMPAR BUSCA</button>
-    <button id="btnClearAll">LIMPAR TUDO</button>
+    <button id="btnClearAll">LIMPAR BASE DE DADOS</button>
   </div>
   
   <div class="file-controls">
@@ -796,8 +827,8 @@ input[type="file"] {
   </div>
   
   <div class="warning">
-    ATENÇÃO: Terminal de consulta apenas.<br>
-    NÃO ENCARAR. NÃO RESPONDER.
+    ATENÇÃO: Terminal conectado ao servidor central.<br>
+    DADOS COMPARTILHADOS EM TEMPO REAL.
   </div>
 </div>
 
@@ -811,11 +842,10 @@ input[type="file"] {
     <div class="empty-state">
       <h3>NENHUMA ANOMALIA SELECIONADA</h3>
       <p>Selecione uma anomalia da lista para visualizar seu dossiê completo.</p>
-      <p>Ou importe um arquivo JSON para adicionar novos registros.</p>
+      <p>Ou importe um arquivo JSON para adicionar novos registros ao banco de dados global.</p>
     </div>
   </div>
   
-  <!-- Seção de Arquivos (inicialmente oculta) -->
   <div id="filesSection" style="display:none; margin-top:30px;">
     <div class="file-section">
       <h3>ARQUIVOS IMPORTANTES</h3>
@@ -860,11 +890,10 @@ function startLoadingScreen() {
     {text: "[OK] Credenciais confirmadas - Nível de segurança 5", delay: 600, type: "success"},
     {text: "[OK] Protocolos de contenção ativos", delay: 800, type: "success"},
     {text: "> Carregando módulos de segurança C.C.O...", delay: 1000, type: "prompt"},
-    {text: "[SCAN] Verificando integridade do banco de dados...", delay: 1200, type: "system"},
-    {text: "[OK] Arquivos de anomalias íntegros", delay: 1400, type: "success"},
-    {text: "> Conectando ao servidor seguro C.C.O...", delay: 1600, type: "prompt"},
+    {text: "[SCAN] Verificando conexão com a nuvem...", delay: 1200, type: "system"},
+    {text: "> Conectando ao servidor seguro Firebase...", delay: 1600, type: "prompt"},
     {text: "[WARNING] Conexão segura estabelecida", delay: 1800, type: "warning"},
-    {text: "> Sistema C.C.O pronto para consulta", delay: 2000, type: "prompt"},
+    {text: "> Sincronizando dados em tempo real...", delay: 2000, type: "prompt"},
     {text: "> Acessando terminal de consulta...", delay: 2200, type: "prompt"}
   ];
   
@@ -872,18 +901,17 @@ function startLoadingScreen() {
   const loadingStages = [
     {stage: "Verificando credenciais...", progress: 10},
     {stage: "Carregando módulos C.C.O...", progress: 25},
-    {stage: "Acessando banco de dados...", progress: 40},
+    {stage: "Conectando ao banco de dados...", progress: 40},
     {stage: "Inicializando interface...", progress: 60},
-    {stage: "Estabelecendo conexão...", progress: 75},
+    {stage: "Sincronizando dados globais...", progress: 75},
     {stage: "Finalizando inicialização...", progress: 90},
-    {stage: "Sistema C.C.O pronto", progress: 100}
+    {stage: "Sistema C.C.O Online", progress: 100}
   ];
   
   let currentMessage = 0;
   let currentStage = 0;
   let progress = 0;
   
-  // Adicionar mensagens ao console
   function addConsoleMessage() {
     if (currentMessage < consoleMessages.length) {
       const msg = consoleMessages[currentMessage];
@@ -897,7 +925,6 @@ function startLoadingScreen() {
     }
   }
   
-  // Atualizar barra de progresso
   function updateProgress() {
     if (currentStage < loadingStages.length) {
       const stage = loadingStages[currentStage];
@@ -912,35 +939,38 @@ function startLoadingScreen() {
         const nextDelay = loadingStages[currentStage].progress - loadingStages[currentStage-1].progress;
         setTimeout(updateProgress, nextDelay * 20);
       } else {
-        // Finalizar carregamento
-        setTimeout(() => {
-          const loadingScreen = document.getElementById('loading-screen');
-          loadingScreen.style.opacity = '0';
-          loadingScreen.style.transition = 'opacity 0.8s ease';
-          
-          setTimeout(() => {
-            loadingScreen.style.display = 'none';
-            document.body.style.opacity = '1';
-            // Inicializar sistema principal
-            initializeMainSystem();
-          }, 800);
-        }, 500);
+        // Aguardar o Firebase carregar completamente se necessário
+        const checkFirebase = setInterval(() => {
+          if (window.firebaseLoaded) {
+            clearInterval(checkFirebase);
+            setTimeout(() => {
+              const loadingScreen = document.getElementById('loading-screen');
+              loadingScreen.style.opacity = '0';
+              loadingScreen.style.transition = 'opacity 0.8s ease';
+              
+              setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                document.body.style.opacity = '1';
+                initializeMainSystem();
+              }, 800);
+            }, 500);
+          }
+        }, 100);
       }
     }
   }
   
-  // Iniciar sequência de carregamento
   setTimeout(() => {
     addConsoleMessage();
     updateProgress();
   }, 500);
 }
 
-// INICIALIZAÇÃO DO SISTEMA PRINCIPAL
+// INICIALIZAÇÃO DO SISTEMA PRINCIPAL (MODIFICADO PARA FIREBASE)
 function initializeMainSystem() {
-  // Inicializar variáveis globais
-  let saved = JSON.parse(localStorage.getItem('analog_entities') || '[]');
-  let importantFiles = JSON.parse(localStorage.getItem('analog_files') || '[]');
+  // Variáveis globais (agora sincronizadas com DB)
+  let saved = [];
+  let importantFiles = [];
   const glitchOverlay = document.querySelector('.glitch-overlay');
   let glitchInterval;
   let currentAnomalyIndex = -1;
@@ -949,12 +979,50 @@ function initializeMainSystem() {
 
   const el = id => document.getElementById(id);
 
-  // Carregar anomalias salvas
+  // --- LISTENER DO FIREBASE: ATUALIZAÇÃO EM TEMPO REAL ---
+  const anomaliesRef = window.dbRef(window.db, 'anomalies');
+  window.dbOnValue(anomaliesRef, (snapshot) => {
+    const data = snapshot.val();
+    saved = [];
+    if (data) {
+      // Converter objeto do Firebase para array
+      Object.keys(data).forEach(key => {
+        saved.push(data[key]);
+      });
+    }
+    loadAnomalies(currentSearchTerm);
+    
+    // Se estiver visualizando uma anomalia, recarregar para mostrar atualizações
+    if (currentAnomalyIndex !== -1 && currentAnomalyIndex < saved.length) {
+        // Encontrar a anomalia correta pelo ID (já que a ordem pode mudar)
+        const currentId = document.querySelector('.dossier-section p strong').nextSibling.textContent.trim();
+        const index = saved.findIndex(a => a.id === currentId);
+        if (index !== -1) loadAnomaly(index);
+    }
+  });
+
+  const filesRef = window.dbRef(window.db, 'files');
+  window.dbOnValue(filesRef, (snapshot) => {
+    const data = snapshot.val();
+    importantFiles = [];
+    if (data) {
+      Object.keys(data).forEach(key => {
+        importantFiles.push(data[key]);
+      });
+    }
+    // Se estiver visualizando arquivos, atualizar a lista
+    if (viewingFiles && currentAnomalyIndex !== -1) {
+        const anomaly = saved[currentAnomalyIndex];
+        if (anomaly) loadFilesForAnomaly(anomaly.id);
+    }
+  });
+  // -------------------------------------------------------
+
+  // Carregar anomalias na lista
   function loadAnomalies(searchTerm = '') {
     const anomalyList = el('anomalyList');
     currentSearchTerm = searchTerm;
     
-    // Filtrar anomalias se houver termo de busca
     let filteredAnomalies = saved;
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase().trim();
@@ -967,10 +1035,9 @@ function initializeMainSystem() {
       );
     }
     
-    // Atualizar contador
     el('resultsInfo').textContent = searchTerm.trim() 
       ? `Resultados: ${filteredAnomalies.length} de ${saved.length}` 
-      : `Total: ${saved.length} anomalias`;
+      : `Total: ${saved.length} anomalias no banco de dados`;
     
     anomalyList.innerHTML = '';
     
@@ -979,13 +1046,13 @@ function initializeMainSystem() {
       emptyItem.className = 'anomaly-item';
       emptyItem.innerHTML = searchTerm.trim() 
         ? '<div class="anomaly-id">NENHUM RESULTADO</div><div class="anomaly-threat">Tente outros termos</div>'
-        : '<div class="anomaly-id">NENHUMA ANOMALIA</div><div class="anomaly-threat">Importe um arquivo JSON</div>';
+        : '<div class="anomaly-id">BANCO DE DADOS VAZIO</div><div class="anomaly-threat">Envie um arquivo JSON</div>';
       anomalyList.appendChild(emptyItem);
       return;
     }
     
     filteredAnomalies.forEach((anomaly, index) => {
-      // Encontrar o índice original no array salvo
+      // Encontrar o índice original no array global
       const originalIndex = saved.findIndex(a => a.id === anomaly.id);
       
       const item = document.createElement('div');
@@ -994,7 +1061,6 @@ function initializeMainSystem() {
         item.classList.add('active');
       }
       
-      // Formatar data se existir
       let dateInfo = '';
       if (anomaly.date) {
         const date = new Date(anomaly.date);
@@ -1007,13 +1073,9 @@ function initializeMainSystem() {
       `;
       
       item.addEventListener('click', () => {
-        // Remove classe ativa de todos os itens
         document.querySelectorAll('.anomaly-item').forEach(i => i.classList.remove('active'));
-        // Adiciona classe ativa ao item clicado
         item.classList.add('active');
-        // Carrega a anomalia
         loadAnomaly(originalIndex);
-        // Se estava visualizando arquivos, atualiza
         if (viewingFiles) {
           loadFilesForAnomaly(anomaly.id);
         }
@@ -1023,17 +1085,15 @@ function initializeMainSystem() {
     });
   }
 
-  // Carregar uma anomalia específica
+  // Carregar anomalia específica
   function loadAnomaly(index) {
     if (index < 0 || index >= saved.length) return;
     
     const anomaly = saved[index];
     currentAnomalyIndex = index;
     
-    // Criar conteúdo do dossiê
     const dossierContent = document.createElement('div');
     
-    // Adicionar imagem se existir
     if (anomaly.image) {
       const img = document.createElement('img');
       img.id = 'pImage';
@@ -1045,7 +1105,6 @@ function initializeMainSystem() {
       dossierContent.appendChild(img);
     }
     
-    // Informações básicas
     const infoSection = document.createElement('div');
     infoSection.className = 'dossier-section';
     infoSection.innerHTML = `
@@ -1056,7 +1115,6 @@ function initializeMainSystem() {
     `;
     dossierContent.appendChild(infoSection);
     
-    // Relato visual
     if (anomaly.visual) {
       const visualSection = document.createElement('div');
       visualSection.className = 'dossier-section';
@@ -1064,7 +1122,6 @@ function initializeMainSystem() {
       dossierContent.appendChild(visualSection);
     }
     
-    // Comportamento
     if (anomaly.behavior) {
       const behaviorSection = document.createElement('div');
       behaviorSection.className = 'dossier-section';
@@ -1072,7 +1129,6 @@ function initializeMainSystem() {
       dossierContent.appendChild(behaviorSection);
     }
     
-    // Efeitos (converter binário para texto)
     if (anomaly.effects) {
       const effectsSection = document.createElement('div');
       effectsSection.className = 'dossier-section';
@@ -1081,7 +1137,6 @@ function initializeMainSystem() {
       dossierContent.appendChild(effectsSection);
     }
     
-    // Contenção
     if (anomaly.containment) {
       const containSection = document.createElement('div');
       containSection.className = 'dossier-section';
@@ -1089,14 +1144,11 @@ function initializeMainSystem() {
       dossierContent.appendChild(containSection);
     }
     
-    // Substituir conteúdo do dossiê
     el('dossierContent').innerHTML = '';
     el('dossierContent').appendChild(dossierContent);
     
-    // Aplicar efeitos visuais baseados na severidade
     applySeverityEffects(anomaly.severity);
     
-    // Se estava visualizando arquivos, mantém a seção visível
     if (viewingFiles) {
       loadFilesForAnomaly(anomaly.id);
       el('filesSection').style.display = 'block';
@@ -1105,16 +1157,12 @@ function initializeMainSystem() {
     }
   }
 
-  // Converter binário para texto
   function convertBinaryToText(binary) {
     try {
-      // Remove espaços e quebras de linha
       const binaryString = binary.replace(/\s+/g, '');
       if (!binaryString.match(/^[01]+$/)) {
-        return binary; // Retorna original se não for binário válido
+        return binary;
       }
-      
-      // Converte cada 8 bits para caractere
       let text = '';
       for (let i = 0; i < binaryString.length; i += 8) {
         const byte = binaryString.substr(i, 8);
@@ -1124,36 +1172,29 @@ function initializeMainSystem() {
       }
       return text;
     } catch (e) {
-      return binary; // Retorna original em caso de erro
+      return binary;
     }
   }
 
-  // Obter texto da severidade
   function getSeverityText(severity) {
     if (!severity) return '---';
     const severityMap = {
       'irreversivel': 'Irreversível',
       'fatal': 'Fatal',
-      'biologico': 'Biologicamente destrutivo',
       'biologico': 'Biologicamente destrutivo'
     };
     return severityMap[severity] || severity;
   }
 
-  // Aplicar efeitos de severidade
   function applySeverityEffects(severity) {
-    // Remove todas as classes de efeito
     document.body.classList.remove('tremor-1', 'tremor-2', 'bio', 'glitch-active');
     
-    // Limpa intervalo de glitch anterior
     if (glitchInterval) {
       clearInterval(glitchInterval);
     }
     
-    // Aplica efeitos baseados na severidade
     if (severity === 'irreversivel') {
       document.body.classList.add('tremor-1');
-      // Efeito de glitch ocasional
       glitchInterval = setInterval(() => {
         if (Math.random() > 0.7) {
           document.body.classList.add('glitch-active');
@@ -1166,7 +1207,6 @@ function initializeMainSystem() {
     
     if (severity === 'fatal') {
       document.body.classList.add('tremor-2');
-      // Efeito de glitch mais frequente
       glitchInterval = setInterval(() => {
         if (Math.random() > 0.5) {
           document.body.classList.add('glitch-active');
@@ -1179,10 +1219,8 @@ function initializeMainSystem() {
     
     if (severity === 'biologico') {
       document.body.classList.add('bio');
-      // Efeito de glitch constante e intenso
       document.body.classList.add('glitch-active');
       glitchInterval = setInterval(() => {
-        // Piscadas aleatórias mais intensas
         if (Math.random() > 0.8) {
           glitchOverlay.style.opacity = '0.6';
           setTimeout(() => {
@@ -1193,7 +1231,6 @@ function initializeMainSystem() {
     }
   }
 
-  // Carregar arquivos para uma anomalia
   function loadFilesForAnomaly(anomalyId) {
     const filesList = el('filesList');
     const anomalyFiles = importantFiles.filter(f => f.anomalyId === anomalyId);
@@ -1210,7 +1247,6 @@ function initializeMainSystem() {
     
     filesList.innerHTML = '';
     
-    // Ordenar por data (mais recente primeiro)
     anomalyFiles.sort((a, b) => new Date(b.date) - new Date(a.date));
     
     anomalyFiles.forEach((file, index) => {
@@ -1221,7 +1257,6 @@ function initializeMainSystem() {
       const dateStr = date.toLocaleDateString('pt-BR');
       const timeStr = date.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
       
-      // Calcular "tamanho" baseado no conteúdo
       const size = file.notes ? Math.ceil(file.notes.length / 100) : 1;
       const sizeLabel = size === 1 ? '1KB' : `${size}KB`;
       
@@ -1240,9 +1275,8 @@ function initializeMainSystem() {
       filesList.appendChild(fileItem);
     });
     
-    // Adicionar botão para limpar arquivos desta anomalia
     const clearBtn = document.createElement('button');
-    clearBtn.textContent = 'LIMPAR ARQUIVOS DESTA ANOMALIA';
+    clearBtn.textContent = 'LIMPAR ARQUIVOS DESTA ANOMALIA (GLOBAL)';
     clearBtn.style.cssText = `
       margin-top:15px;
       width:100%;
@@ -1255,19 +1289,18 @@ function initializeMainSystem() {
     `;
     
     clearBtn.addEventListener('click', () => {
-      if (confirm(`Remover todos os ${anomalyFiles.length} arquivo(s) importantes registrados para esta anomalia?`)) {
-        importantFiles = importantFiles.filter(f => f.anomalyId !== anomalyId);
-        localStorage.setItem('analog_files', JSON.stringify(importantFiles));
-        loadFilesForAnomaly(anomalyId);
-        loadAnomalies(currentSearchTerm);
-        showNotification('Arquivos removidos com sucesso.');
+      if (confirm(`ATENÇÃO: Isso removerá os arquivos para TODOS os usuários.\nRemover todos os ${anomalyFiles.length} arquivo(s)?`)) {
+        // Remover arquivos do Firebase
+        anomalyFiles.forEach(f => {
+             window.dbRemove(window.dbRef(window.db, 'files/' + f.id));
+        });
+        showNotification('Arquivos removidos do servidor.');
       }
     });
     
     filesList.appendChild(clearBtn);
   }
 
-  // Visualizar detalhes de um arquivo
   function viewFileDetails(file) {
     const anomaly = saved.find(a => a.id === file.anomalyId);
     if (!anomaly) return;
@@ -1329,7 +1362,7 @@ function initializeMainSystem() {
           FECHAR
         </button>
         <button id="modalDelete" style="flex:1; padding:8px; background:rgba(179,0,0,0.2); border:1px solid #b30000; color:#ff6666; cursor:pointer; font-family:'Courier Prime',monospace;">
-          REMOVER ARQUIVO
+          REMOVER (GLOBAL)
         </button>
       </div>
     `;
@@ -1342,17 +1375,14 @@ function initializeMainSystem() {
     });
     
     el('modalDelete').addEventListener('click', () => {
-      if (confirm('Remover este arquivo permanentemente?')) {
-        importantFiles = importantFiles.filter(f => f.id !== file.id);
-        localStorage.setItem('analog_files', JSON.stringify(importantFiles));
+      if (confirm('Remover este arquivo permanentemente do servidor para TODOS os usuários?')) {
+        // Remover do Firebase
+        window.dbRemove(window.dbRef(window.db, 'files/' + file.id));
         document.body.removeChild(modal);
-        loadFilesForAnomaly(file.anomalyId);
-        loadAnomalies(currentSearchTerm);
-        showNotification('Arquivo removido.');
+        showNotification('Arquivo removido do servidor.');
       }
     });
     
-    // Fechar ao clicar fora
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
         document.body.removeChild(modal);
@@ -1360,7 +1390,7 @@ function initializeMainSystem() {
     });
   }
 
-  // Marcar uma anomalia como arquivo importante
+  // Marcar anomalia como arquivo importante (Salva no Firebase)
   el('btnMarkFile').addEventListener('click', () => {
     if (currentAnomalyIndex < 0 || currentAnomalyIndex >= saved.length) {
       showNotification('Selecione uma anomalia primeiro.');
@@ -1369,7 +1399,7 @@ function initializeMainSystem() {
     
     const anomaly = saved[currentAnomalyIndex];
     
-    // Verificar se já existe arquivo para esta anomalia
+    // Verificar se já existe (agora verifica no array sincronizado)
     const existingFile = importantFiles.find(f => f.anomalyId === anomaly.id);
     if (existingFile) {
       if (!confirm(`Já existe um arquivo importante para "${anomaly.id}".\nDeseja atualizá-lo com novas informações?`)) {
@@ -1377,7 +1407,6 @@ function initializeMainSystem() {
       }
     }
     
-    // Perguntar se quer adicionar notas personalizadas
     const addNotes = confirm(`Criar arquivo importante para "${anomaly.id}"\n\nDeseja adicionar anotações ao arquivo? (Cancelar para usar dados padrão)`);
     
     let notes = '';
@@ -1385,14 +1414,13 @@ function initializeMainSystem() {
     
     if (addNotes) {
       notes = prompt('Digite suas anotações para este arquivo importante:', '');
-      if (notes === null) return; // Usuário cancelou
+      if (notes === null) return;
       
       const customLabel = prompt('Título do arquivo (opcional):', label);
       if (customLabel !== null && customLabel.trim() !== '') {
         label = customLabel.trim();
       }
     } else {
-      // Conteúdo padrão baseado nos dados da anomalia
       notes = `ARQUIVO IMPORTANTE - CLASSIFICAÇÃO: ${getSeverityText(anomaly.severity)}\n`;
       notes += `============================================\n\n`;
       notes += `ANOMALIA: ${anomaly.id}\n`;
@@ -1412,34 +1440,22 @@ function initializeMainSystem() {
       }
     }
     
+    const fileId = existingFile ? existingFile.id : 'FILE_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+
     const file = {
-      id: 'FILE_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+      id: fileId,
       anomalyId: anomaly.id,
       date: new Date().toISOString(),
       notes: notes,
       label: label
     };
     
-    // Se já existe, substituir
-    if (existingFile) {
-      const index = importantFiles.findIndex(f => f.id === existingFile.id);
-      importantFiles[index] = file;
-    } else {
-      importantFiles.push(file);
-    }
-    
-    localStorage.setItem('analog_files', JSON.stringify(importantFiles));
-    
-    // Atualizar interface
-    loadAnomalies(currentSearchTerm);
-    if (viewingFiles) {
-      loadFilesForAnomaly(anomaly.id);
-    }
-    
-    showNotification(`Arquivo importante criado para "${anomaly.id}"`);
+    // Salvar no Firebase
+    window.dbSet(window.dbRef(window.db, 'files/' + fileId), file)
+        .then(() => showNotification(`Arquivo salvo no servidor.`))
+        .catch(err => alert("Erro ao salvar no servidor: " + err));
   });
 
-  // Alternar visualização de arquivos
   el('btnViewFiles').addEventListener('click', () => {
     viewingFiles = !viewingFiles;
     
@@ -1462,7 +1478,7 @@ function initializeMainSystem() {
     }
   });
 
-  // Importar arquivo JSON - AGORA SUPORTA O FORMATO COMPLETO
+  // Importar JSON e enviar para o Firebase
   el('jsonInput').addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
@@ -1472,68 +1488,50 @@ function initializeMainSystem() {
       try {
         const jsonData = JSON.parse(ev.target.result);
         
-        // Verificar se é o formato antigo (anomaly) ou novo (anomaly)
         let anomalyData;
         let filesToImport = [];
         
         if (jsonData.anomaly) {
-          // Formato novo: {anomaly: {...}, importantFiles: [...]}
           anomalyData = jsonData.anomaly;
           if (jsonData.importantFiles && Array.isArray(jsonData.importantFiles)) {
             filesToImport = jsonData.importantFiles;
           }
         } else if (jsonData.id) {
-          // Formato antigo: apenas uma anomalia
           anomalyData = jsonData;
         } else {
-          throw new Error('Formato JSON inválido. Deve conter um objeto "anomaly" ou propriedades de anomalia.');
+          throw new Error('Formato JSON inválido.');
         }
         
-        // Validar dados mínimos
         if (!anomalyData.id) {
           anomalyData.id = `ANOMALY_${Date.now()}`;
         }
         
-        // Verificar se já existe
+        // Verificar duplicata no Firebase
         const existingIndex = saved.findIndex(a => a.id === anomalyData.id);
+        let proceed = true;
         if (existingIndex !== -1) {
-          if (confirm(`Anomalia "${anomalyData.id}" já existe. Deseja substituir?`)) {
-            saved[existingIndex] = anomalyData;
-          } else {
-            el('jsonInput').value = '';
-            return;
+          if (!confirm(`Anomalia "${anomalyData.id}" já existe no banco de dados. Deseja substituir os dados para TODOS os usuários?`)) {
+            proceed = false;
           }
-        } else {
-          saved.push(anomalyData);
         }
-        
-        // Importar arquivos importantes se houver
-        if (filesToImport.length > 0) {
-          filesToImport.forEach(fileData => {
-            // Verificar se o arquivo já existe
-            const existingFileIndex = importantFiles.findIndex(f => f.id === fileData.id);
-            if (existingFileIndex !== -1) {
-              // Substituir arquivo existente
-              importantFiles[existingFileIndex] = fileData;
-            } else {
-              // Adicionar novo arquivo
-              importantFiles.push(fileData);
-            }
-          });
+
+        if (proceed) {
+            // Enviar Anomalia para o Firebase
+            window.dbSet(window.dbRef(window.db, 'anomalies/' + anomalyData.id), anomalyData)
+                .then(() => {
+                    // Enviar Arquivos para o Firebase
+                    if (filesToImport.length > 0) {
+                        filesToImport.forEach(fileData => {
+                            window.dbSet(window.dbRef(window.db, 'files/' + fileData.id), fileData);
+                        });
+                    }
+                    showNotification('Dados enviados para a nuvem com sucesso!');
+                })
+                .catch(err => alert("Erro ao enviar: " + err));
         }
-        
-        localStorage.setItem('analog_entities', JSON.stringify(saved));
-        localStorage.setItem('analog_files', JSON.stringify(importantFiles));
-        loadAnomalies(currentSearchTerm);
+
         el('jsonInput').value = '';
         
-        // Carregar a anomalia recém-importada
-        const index = existingIndex !== -1 ? existingIndex : saved.length - 1;
-        loadAnomaly(index);
-        
-        // Feedback visual
-        const filesMsg = filesToImport.length > 0 ? ` e ${filesToImport.length} arquivo(s) importante(s)` : '';
-        showNotification(`Anomalia importada com sucesso${filesMsg}!`);
       } catch (error) {
         alert('ERRO: Arquivo JSON inválido. ' + error.message);
       }
@@ -1541,12 +1539,10 @@ function initializeMainSystem() {
     reader.readAsText(file);
   });
 
-  // Pesquisar anomalias
   el('btnSearch').addEventListener('click', () => {
     const searchTerm = el('searchInput').value;
     loadAnomalies(searchTerm);
     
-    // Se houver resultados, selecionar o primeiro
     const filteredAnomalies = saved.filter(anomaly => 
       searchTerm.trim() && (
         (anomaly.id && anomaly.id.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -1560,7 +1556,6 @@ function initializeMainSystem() {
       const originalIndex = saved.findIndex(a => a.id === firstAnomaly.id);
       loadAnomaly(originalIndex);
     } else if (searchTerm.trim()) {
-      // Se não encontrou nada, limpar o dossiê
       clearDossier();
     }
   });
@@ -1571,7 +1566,6 @@ function initializeMainSystem() {
     }
   });
 
-  // Limpar busca
   el('btnClearSearch').addEventListener('click', () => {
     el('searchInput').value = '';
     loadAnomalies('');
@@ -1582,25 +1576,26 @@ function initializeMainSystem() {
     }
   });
 
-  // Limpar todos os registros
+  // Limpar Banco de Dados (Firebase)
   el('btnClearAll').addEventListener('click', () => {
     if (saved.length === 0 && importantFiles.length === 0) {
-      showNotification('Nenhum registro para limpar.');
+      showNotification('Banco de dados já está vazio.');
       return;
     }
     
-    if (confirm('⚠️ ATENÇÃO: Esta ação irá apagar TODOS os registros de anomalias e ARQUIVOS. Esta ação é irreversível. Continuar?')) {
-      localStorage.removeItem('analog_entities');
-      localStorage.removeItem('analog_files');
-      saved = [];
-      importantFiles = [];
-      loadAnomalies('');
-      clearDossier();
-      showNotification('Todos os registros foram apagados.');
+    if (confirm('⚠️ PERIGO: Isso apagará o banco de dados ONLINE para TODOS os usuários.\nEsta ação é irreversível. Continuar?')) {
+      const senha = prompt("Digite a senha de administrador para confirmar:");
+      if (senha === "CCO-ADMIN") { // Senha simples de proteção
+          window.dbSet(window.dbRef(window.db, 'anomalies'), null);
+          window.dbSet(window.dbRef(window.db, 'files'), null);
+          clearDossier();
+          showNotification('Banco de dados global formatado.');
+      } else {
+          alert("Acesso negado.");
+      }
     }
   });
 
-  // Limpar visualização do dossiê
   function clearDossier() {
     el('dossierContent').innerHTML = `
       <div class="empty-state">
@@ -1610,21 +1605,14 @@ function initializeMainSystem() {
       </div>
     `;
     currentAnomalyIndex = -1;
-    
-    // Remover efeitos
     document.body.classList.remove('tremor-1', 'tremor-2', 'bio', 'glitch-active');
-    if (glitchInterval) {
-      clearInterval(glitchInterval);
-    }
-    
-    // Ocultar seção de arquivos
+    if (glitchInterval) clearInterval(glitchInterval);
     el('filesSection').style.display = 'none';
     viewingFiles = false;
     el('btnViewFiles').textContent = 'VER ARQUIVOS';
     el('btnViewFiles').style.background = '';
   }
 
-  // Mostrar notificação
   function showNotification(message) {
     const notification = document.createElement('div');
     notification.style.cssText = `
@@ -1668,7 +1656,6 @@ function initializeMainSystem() {
     }, 3000);
   }
 
-  // Efeito de glitch aleatório leve
   setInterval(() => {
     if (!document.body.classList.contains('bio') && 
         !document.body.classList.contains('tremor-1') && 
@@ -1681,19 +1668,11 @@ function initializeMainSystem() {
     }
   }, 3000);
 
-  // Inicializar sistema principal
-  loadAnomalies('');
-  if (saved.length > 0) {
-    loadAnomaly(0);
-  }
+  // Inicialização é chamada após carregamento do Firebase
 }
 
-// INICIAR TELA DE CARREGAMENTO
 window.addEventListener('DOMContentLoaded', () => {
-  // Esconder o conteúdo principal inicialmente
   document.body.style.opacity = '0';
-  
-  // Iniciar a sequência de carregamento
   startLoadingScreen();
 });
 </script>
