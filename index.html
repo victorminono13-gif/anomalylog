@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ARQUIVO RESTRITO — CONSULTA DE ENTIDADES</title>
+<title>ARQUIVO RESTRITO — CONSULTA DE ENTIDADES (ONLINE)</title>
 
 <link href="https://fonts.googleapis.com/css2?family=VT323&family=Courier+Prime&display=swap" rel="stylesheet">
 
 <style>
+/* --- ESTILOS ORIGINAIS MANTIDOS --- */
 :root{
   --bg:#0b0b0b;
   --paper:#141414;
@@ -16,8 +17,7 @@
   --glitch:#00ffcc;
   --file-color:#0099ff;
   --file-bg:rgba(0, 153, 255, 0.08);
-  --net-color: #bd00ff;
-  --net-bg: rgba(189, 0, 255, 0.08);
+  --github-color: #6e5494; /* Cor para indicar GitHub */
 }
 
 /* ESTILOS DA TELA DE CARREGAMENTO */
@@ -84,576 +84,108 @@
   white-space: pre-wrap;
 }
 
-.console-line.prompt {
-  color: var(--glitch);
-}
+.console-line.prompt { color: var(--glitch); }
+.console-line.system { color: #00aaff; }
+.console-line.warning { color: #ff9900; }
+.console-line.error { color: #ff3333; }
+.console-line.success { color: #00cc66; }
 
-.console-line.system {
-  color: #00aaff;
-}
+.loading-logo { margin-bottom: 30px; text-align: center; }
+.logo-text { font-family: 'VT323', monospace; font-size: 2.2em; color: var(--glitch); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 10px; position: relative; display: inline-block; }
+.logo-text::before { content: "◈"; position: absolute; left: -30px; color: var(--danger); animation: spin 4s linear infinite; }
+.logo-text::after { content: "◈"; position: absolute; right: -30px; color: var(--danger); animation: spin 4s linear infinite reverse; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.logo-subtitle { color: #777; font-size: 0.9em; letter-spacing: 1px; border-top: 1px solid #333; padding-top: 10px; margin-top: 10px; }
 
-.console-line.warning {
-  color: #ff9900;
-}
-
-.console-line.error {
-  color: #ff3333;
-}
-
-.console-line.success {
-  color: #00cc66;
-}
-
-.loading-logo {
-  margin-bottom: 30px;
-  text-align: center;
-}
-
-.logo-text {
-  font-family: 'VT323', monospace;
-  font-size: 2.2em;
-  color: var(--glitch);
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-bottom: 10px;
-  position: relative;
-  display: inline-block;
-}
-
-.logo-text::before {
-  content: "◈";
-  position: absolute;
-  left: -30px;
-  color: var(--danger);
-  animation: spin 4s linear infinite;
-}
-
-.logo-text::after {
-  content: "◈";
-  position: absolute;
-  right: -30px;
-  color: var(--danger);
-  animation: spin 4s linear infinite reverse;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.logo-subtitle {
-  color: #777;
-  font-size: 0.9em;
-  letter-spacing: 1px;
-  border-top: 1px solid #333;
-  padding-top: 10px;
-  margin-top: 10px;
-}
-
-.loading-bar-container {
-  width: 90%;
-  max-width: 600px;
-  margin-top: 40px;
-  background: #111;
-  border: 1px solid #333;
-  padding: 15px;
-}
-
-.loading-bar-info {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  color: #aaa;
-  font-size: 0.85em;
-}
-
-.loading-bar {
-  width: 100%;
-  height: 20px;
-  background: #050505;
-  border: 1px solid #333;
-  position: relative;
-  overflow: hidden;
-}
-
-.loading-progress {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  background: linear-gradient(90deg, #002233, #00aaff, #002233);
-  background-size: 200% 100%;
-  animation: loadingGradient 2s linear infinite;
-  width: 0%;
-  transition: width 0.3s ease;
-}
-
-@keyframes loadingGradient {
-  0% { background-position: 200% 0; }
-  100% { background-position: 0% 0; }
-}
-
-.loading-percentage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: bold;
-  font-size: 0.8em;
-  text-shadow: 0 0 5px #000;
-}
-
-.loading-status {
-  text-align: center;
-  margin-top: 15px;
-  color: #aaa;
-  font-size: 0.9em;
-  min-height: 20px;
-}
+.loading-bar-container { width: 90%; max-width: 600px; margin-top: 40px; background: #111; border: 1px solid #333; padding: 15px; }
+.loading-bar-info { display: flex; justify-content: space-between; margin-bottom: 10px; color: #aaa; font-size: 0.85em; }
+.loading-bar { width: 100%; height: 20px; background: #050505; border: 1px solid #333; position: relative; overflow: hidden; }
+.loading-progress { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, #002233, #00aaff, #002233); background-size: 200% 100%; animation: loadingGradient 2s linear infinite; width: 0%; transition: width 0.3s ease; }
+@keyframes loadingGradient { 0% { background-position: 200% 0; } 100% { background-position: 0% 0; } }
+.loading-percentage { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 0.8em; text-shadow: 0 0 5px #000; }
+.loading-status { text-align: center; margin-top: 15px; color: #aaa; font-size: 0.9em; min-height: 20px; }
 
 *{box-sizing:border-box}
+body{ margin:0; padding:20px; background:var(--bg); color:var(--ink); font-family:'Courier Prime',monospace; transition:background .5s; position:relative; overflow-x:hidden; opacity: 0; animation: fadeIn 1s forwards; animation-delay: 0.5s; }
+@keyframes fadeIn { to { opacity: 1; } }
 
-body{
-  margin:0;
-  padding:20px;
-  background:var(--bg);
-  color:var(--ink);
-  font-family:'Courier Prime',monospace;
-  transition:background .5s;
-  position:relative;
-  overflow-x:hidden;
-  opacity: 0;
-  animation: fadeIn 1s forwards;
-  animation-delay: 0.5s;
-}
-
-@keyframes fadeIn {
-  to { opacity: 1; }
-}
-
-.glitch-overlay{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  pointer-events:none;
-  z-index:1000;
-  opacity:0;
-  background:linear-gradient(rgba(0,255,204,0.03), transparent 30%),
-            linear-gradient(90deg, rgba(255,0,0,0.02), rgba(0,255,204,0.02));
-  mix-blend-mode:screen;
-  transition:opacity 0.3s;
-}
-
-body.glitch-active .glitch-overlay{
-  animation:fullGlitch 0.5s infinite;
-}
-
-@keyframes fullGlitch{
-  0%{ opacity:0.1; transform:translateX(0); clip-path:inset(0 0 0 0); }
-  2%{ opacity:0.3; transform:translateX(-2px); clip-path:inset(20% 0 60% 0); }
-  4%{ opacity:0.1; transform:translateX(2px); clip-path:inset(60% 0 20% 0); }
-  6%{ opacity:0.4; transform:translateX(-1px); clip-path:inset(10% 0 40% 0); }
-  8%{ opacity:0.1; transform:translateX(1px); clip-path:inset(40% 0 10% 0); }
-  100%{ opacity:0.1; transform:translateX(0); clip-path:inset(0 0 0 0); }
-}
-
+.glitch-overlay{ position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1000; opacity:0; background:linear-gradient(rgba(0,255,204,0.03), transparent 30%), linear-gradient(90deg, rgba(255,0,0,0.02), rgba(0,255,204,0.02)); mix-blend-mode:screen; transition:opacity 0.3s; }
+body.glitch-active .glitch-overlay{ animation:fullGlitch 0.5s infinite; }
+@keyframes fullGlitch{ 0%{opacity:0.1;transform:translateX(0);clip-path:inset(0 0 0 0);} 2%{opacity:0.3;transform:translateX(-2px);clip-path:inset(20% 0 60% 0);} 4%{opacity:0.1;transform:translateX(2px);clip-path:inset(60% 0 20% 0);} 6%{opacity:0.4;transform:translateX(-1px);clip-path:inset(10% 0 40% 0);} 8%{opacity:0.1;transform:translateX(1px);clip-path:inset(40% 0 10% 0);} 100%{opacity:0.1;transform:translateX(0);clip-path:inset(0 0 0 0);} }
 body.tremor-1{animation:tremor .6s infinite}
 body.tremor-2{animation:tremor .35s infinite}
+@keyframes tremor{ 0%{transform:translate(0,0)} 25%{transform:translate(1px,-1px)} 50%{transform:translate(-1px,1px)} 75%{transform:translate(1px,1px)} 100%{transform:translate(0,0)} }
 
-@keyframes tremor{
-  0%{transform:translate(0,0)}
-  25%{transform:translate(1px,-1px)}
-  50%{transform:translate(-1px,1px)}
-  75%{transform:translate(1px,1px)}
-  100%{transform:translate(0,0)}
-}
-
-.container{
-  max-width:1200px;
-  margin:auto;
-  display:grid;
-  grid-template-columns:1fr 2fr;
-  gap:30px;
-  position:relative;
-  z-index:1;
-}
-
-.paper{
-  background:var(--paper);
-  border:1px solid #2a2a2a;
-  padding:20px;
-  box-shadow:0 0 15px rgba(0,0,0,.6);
-  position:relative;
-}
-
-h1,h2,h3{
-  font-family:'VT323',monospace;
-  color:var(--danger);
-  text-transform:uppercase;
-  position:relative;
-  margin-top:0;
-}
-
-.sidebar h1 {
-  font-size:1.5em;
-  margin-bottom:15px;
-  text-align:center;
-}
-
+.container{ max-width:1200px; margin:auto; display:grid; grid-template-columns:1fr 2fr; gap:30px; position:relative; z-index:1; }
+.paper{ background:var(--paper); border:1px solid #2a2a2a; padding:20px; box-shadow:0 0 15px rgba(0,0,0,.6); position:relative; }
+h1,h2,h3{ font-family:'VT323',monospace; color:var(--danger); text-transform:uppercase; position:relative; margin-top:0; }
+.sidebar h1 { font-size:1.5em; margin-bottom:15px; text-align:center; }
 label{font-size:.85em;color:#aaa;display:block;margin-bottom:5px;}
+input,textarea,select,button{ background:#050505; border:1px solid #333; color:var(--ink); padding:6px; font-family:'Courier Prime',monospace; font-size:0.9em; width: 100%; margin-bottom: 5px;}
+button{ cursor:pointer; transition:background 0.3s; white-space:nowrap; }
+button:hover{ background:#222; }
 
-input,textarea,select,button{
-  background:#050505;
-  border:1px solid #333;
-  color:var(--ink);
-  padding:6px;
-  font-family:'Courier Prime',monospace;
-  font-size:0.9em;
-}
+.sidebar { display:flex; flex-direction:column; gap:15px; }
+.search-container, .import-container, .github-container { background:#111; padding:12px; border:1px solid #2a2a2a; }
+.search-box { display:flex; gap:8px; margin-top:5px; }
+.search-box input { flex:1; width:100%; margin-bottom: 0;}
+.anomaly-list-container { flex:1; display:flex; flex-direction:column; background:#111; padding:12px; border:1px solid #2a2a2a; }
+.anomaly-list { flex:1; overflow-y:auto; max-height:250px; border:1px solid #333; margin-top:5px; }
+.anomaly-item { padding:8px 10px; border-bottom:1px solid #333; cursor:pointer; transition:background 0.3s; font-size:0.9em; }
+.anomaly-item:hover { background:#1a1a1a; }
+.anomaly-item.active { background:#2a2a2a; border-left:3px solid var(--danger); }
+.anomaly-id { font-weight:bold; color:var(--glitch); margin-bottom:3px; }
+.anomaly-threat { font-size:0.75em; color:#aaa; }
+.results-info { font-size:0.8em; color:#777; margin-top:5px; text-align:center; }
 
-button{
-  cursor:pointer;
-  transition:background 0.3s;
-  white-space:nowrap;
-}
+.controls { display:flex; gap:8px; margin-top:10px; }
+.controls button { flex:1; padding:6px; font-size:0.85em; }
+.file-controls { display:flex; gap:8px; margin-top:10px; }
+.file-controls button { flex:1; padding:6px; font-size:0.85em; background:var(--file-bg); border:1px solid var(--file-color); color:var(--file-color); }
+.file-controls button:hover { background:rgba(0, 153, 255, 0.15); }
 
-button:hover{
-  background:#222;
-}
+/* Estilos Novos para GitHub */
+.github-container { border: 1px solid var(--github-color); background: rgba(110, 84, 148, 0.05); }
+.github-label { color: var(--github-color); font-weight: bold; display: flex; align-items: center; gap: 5px; }
+.github-label::before { content: "☁"; }
+.gh-input-group { margin-bottom: 8px; }
+.gh-status { font-size: 0.75em; color: #777; margin-bottom: 5px; text-align: right;}
+.gh-file-list { max-height: 150px; overflow-y: auto; border: 1px solid #333; margin-top: 5px; background: #050505; }
+.gh-file-item { padding: 5px; border-bottom: 1px solid #222; font-size: 0.8em; cursor: pointer; display: flex; justify-content: space-between; }
+.gh-file-item:hover { background: rgba(110, 84, 148, 0.2); }
+.btn-gh { background: rgba(110, 84, 148, 0.2); border: 1px solid var(--github-color); color: #c0adjs; }
+.btn-gh:hover { background: rgba(110, 84, 148, 0.4); }
 
-.sidebar {
-  display:flex;
-  flex-direction:column;
-  gap:15px;
-}
-
-.search-container {
-  background:#111;
-  padding:12px;
-  border:1px solid #2a2a2a;
-}
-
-.search-box {
-  display:flex;
-  gap:8px;
-  margin-top:5px;
-}
-
-.search-box input {
-  flex:1;
-  width:100%;
-}
-
-.import-container {
-  background:#111;
-  padding:12px;
-  border:1px solid #2a2a2a;
-}
-
-.anomaly-list-container {
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  background:#111;
-  padding:12px;
-  border:1px solid #2a2a2a;
-}
-
-.anomaly-list {
-  flex:1;
-  overflow-y:auto;
-  max-height:300px;
-  border:1px solid #333;
-  margin-top:5px;
-}
-
-.anomaly-item {
-  padding:8px 10px;
-  border-bottom:1px solid #333;
-  cursor:pointer;
-  transition:background 0.3s;
-  font-size:0.9em;
-}
-
-.anomaly-item:hover {
-  background:#1a1a1a;
-}
-
-.anomaly-item.active {
-  background:#2a2a2a;
-  border-left:3px solid var(--danger);
-}
-
-.anomaly-id {
-  font-weight:bold;
-  color:var(--glitch);
-  margin-bottom:3px;
-}
-
-.anomaly-threat {
-  font-size:0.75em;
-  color:#aaa;
-}
-
-.results-info {
-  font-size:0.8em;
-  color:#777;
-  margin-top:5px;
-  text-align:center;
-}
-
-.controls {
-  display:flex;
-  gap:8px;
-  margin-top:10px;
-}
-
-.controls button {
-  flex:1;
-  padding:6px;
-  font-size:0.85em;
-}
-
-.file-controls {
-  display:flex;
-  gap:8px;
-  margin-top:10px;
-}
-
-.file-controls button {
-  flex:1;
-  padding:6px;
-  font-size:0.85em;
-  background:var(--file-bg);
-  border:1px solid var(--file-color);
-  color:var(--file-color);
-}
-
-.file-controls button:hover {
-  background:rgba(0, 153, 255, 0.15);
-}
-
-/* NETWORK STYLES */
-.net-controls {
-  display:flex;
-  gap:8px;
-  margin-top:10px;
-}
-
-.net-controls button {
-  flex:1;
-  padding:6px;
-  font-size:0.85em;
-  background:var(--net-bg);
-  border:1px solid var(--net-color);
-  color:var(--net-color);
-}
-
-.net-controls button:hover {
-  background:rgba(189, 0, 255, 0.15);
-}
-
-.glitch{
-  animation:glitch 1.4s infinite;
-  color:var(--glitch);
-}
-
-@keyframes glitch{
-  0%{opacity:1}
-  50%{opacity:.55}
-  100%{opacity:1}
-}
-
-.warning{
-  border:1px solid var(--danger);
-  padding:10px;
-  color:var(--danger);
-  font-size:.75em;
-  margin-top:10px;
-  text-align:center;
-  animation:pulse 2s infinite;
-}
-
-@keyframes pulse{
-  0%{opacity:0.6}
-  50%{opacity:1}
-  100%{opacity:0.6}
-}
-
-img{
-  max-width:100%;
-  border:1px solid #333;
-  transition:transform .4s, filter .3s;
-  position:relative;
-  filter:brightness(0.8) contrast(1.1);
-}
-
-body.bio img{
-  transform:scale(1.15);
-  filter:brightness(0.6) contrast(1.3) hue-rotate(10deg) saturate(1.5);
-  animation:imageGlitch .25s infinite;
-}
-
-@keyframes imageGlitch{
-  0%{ clip-path:inset(0 0 0 0); filter:brightness(0.6) contrast(1.3) hue-rotate(10deg) saturate(1.5); }
-  20%{ clip-path:inset(10% 0 20% 0); filter:brightness(0.5) contrast(1.5) hue-rotate(15deg) saturate(2) sepia(0.3); }
-  40%{ clip-path:inset(0 20% 0 10%); filter:brightness(0.7) contrast(1.2) hue-rotate(5deg) saturate(1.3) invert(0.1); }
-  60%{ clip-path:inset(20% 0 10% 0); filter:brightness(0.5) contrast(1.6) hue-rotate(20deg) saturate(2.2); }
-  80%{ clip-path:inset(0 10% 0 20%); filter:brightness(0.6) contrast(1.4) hue-rotate(12deg) saturate(1.8); }
-  100%{ clip-path:inset(0 0 0 0); filter:brightness(0.6) contrast(1.3) hue-rotate(10deg) saturate(1.5); }
-}
-
-body.bio .paper{
-  animation:textDistort 5s infinite;
-}
-
-@keyframes textDistort{
-  0%{transform:translateX(0)}
-  94%{transform:translateX(0)}
-  95%{transform:translateX(2px)}
-  96%{transform:translateX(-2px)}
-  97%{transform:translateX(1px)}
-  98%{transform:translateX(-1px)}
-  100%{transform:translateX(0)}
-}
-
-.scanlines{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.1) 50%);
-  background-size:100% 4px;
-  pointer-events:none;
-  z-index:999;
-  opacity:0.3;
-}
-
-.dossier-content {
-  min-height:600px;
-}
-
-.dossier-section {
-  margin-bottom:15px;
-  padding-bottom:15px;
-  border-bottom:1px solid #2a2a2a;
-}
-
-.dossier-section:last-child {
-  border-bottom:none;
-}
-
-.dossier-section p {
-  line-height:1.5;
-  white-space:pre-wrap;
-  margin:8px 0;
-  font-size:0.95em;
-}
-
-.empty-state {
-  text-align:center;
-  color:#777;
-  padding:40px 20px;
-  font-size:0.9em;
-}
-
-input[type="file"] {
-  width:100%;
-  padding:5px;
-  font-size:0.8em;
-}
-
-#searchInput:focus {
-  outline:none;
-  border-color:#444;
-  box-shadow:0 0 5px rgba(0,255,204,0.2);
-}
-
-.file-section {
-  border:1px solid var(--file-color);
-  padding:15px;
-  margin:15px 0;
-  background:rgba(0,153,255,0.05);
-}
-
-.file-section h3 {
-  color:var(--file-color);
-  margin-top:0;
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-
-.file-item {
-  padding:8px 10px;
-  border-bottom:1px dashed rgba(0,153,255,0.3);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  cursor:pointer;
-  transition:background 0.3s;
-}
-
-.file-item:hover {
-  background:rgba(0,153,255,0.1);
-}
-
-.file-label {
-  font-weight:bold;
-  color:var(--file-color);
-  font-size:0.9em;
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-
-.file-info {
-  color:#aaa;
-  font-size:0.8em;
-  text-align:right;
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-}
-
-/* Modal Estilos */
-.modal-overlay {
-  position:fixed;
-  top:0; left:0; width:100%; height:100%;
-  background:rgba(0,0,0,0.85);
-  display:flex; align-items:center; justify-content:center;
-  z-index:10000;
-}
-.modal-content {
-  background:#141414;
-  border:1px solid #444;
-  padding:20px;
-  max-width:550px;
-  width:90%;
-  max-height:85vh;
-  overflow-y:auto;
-  font-family:'Courier Prime',monospace;
-  color:#e8e8e8;
-  box-shadow:0 0 20px rgba(0,0,0,0.8);
-}
-.modal-header {
-  font-family:'VT323',monospace; font-size:1.4em; 
-  margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:5px;
-  display: flex; justify-content: space-between; align-items: center;
-}
-.modal-close-btn {
-  background: none; border: none; color: #777; font-size: 1.2em;
-}
-.modal-close-btn:hover { color: #fff; background: none; }
-
+.glitch{ animation:glitch 1.4s infinite; color:var(--glitch); }
+@keyframes glitch{ 0%{opacity:1} 50%{opacity:.55} 100%{opacity:1} }
+.warning{ border:1px solid var(--danger); padding:10px; color:var(--danger); font-size:.75em; margin-top:10px; text-align:center; animation:pulse 2s infinite; }
+@keyframes pulse{ 0%{opacity:0.6} 50%{opacity:1} 100%{opacity:0.6} }
+img{ max-width:100%; border:1px solid #333; transition:transform .4s, filter .3s; position:relative; filter:brightness(0.8) contrast(1.1); }
+body.bio img{ transform:scale(1.15); filter:brightness(0.6) contrast(1.3) hue-rotate(10deg) saturate(1.5); animation:imageGlitch .25s infinite; }
+@keyframes imageGlitch{ 0%{clip-path:inset(0 0 0 0);filter:brightness(0.6) contrast(1.3) hue-rotate(10deg) saturate(1.5);} 20%{clip-path:inset(10% 0 20% 0);filter:brightness(0.5) contrast(1.5) hue-rotate(15deg) saturate(2) sepia(0.3);} 40%{clip-path:inset(0 20% 0 10%);filter:brightness(0.7) contrast(1.2) hue-rotate(5deg) saturate(1.3) invert(0.1);} 60%{clip-path:inset(20% 0 10% 0);filter:brightness(0.5) contrast(1.6) hue-rotate(20deg) saturate(2.2);} 80%{clip-path:inset(0 10% 0 20%);filter:brightness(0.6) contrast(1.4) hue-rotate(12deg) saturate(1.8);} 100%{clip-path:inset(0 0 0 0);filter:brightness(0.6) contrast(1.3) hue-rotate(10deg) saturate(1.5);} }
+body.bio .paper{ animation:textDistort 5s infinite; }
+@keyframes textDistort{ 0%{transform:translateX(0)} 94%{transform:translateX(0)} 95%{transform:translateX(2px)} 96%{transform:translateX(-2px)} 97%{transform:translateX(1px)} 98%{transform:translateX(-1px)} 100%{transform:translateX(0)} }
+.scanlines{ position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.1) 50%); background-size:100% 4px; pointer-events:none; z-index:999; opacity:0.3; }
+.dossier-content { min-height:600px; }
+.dossier-section { margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid #2a2a2a; }
+.dossier-section:last-child { border-bottom:none; }
+.dossier-section p { line-height:1.5; white-space:pre-wrap; margin:8px 0; font-size:0.95em; }
+.empty-state { text-align:center; color:#777; padding:40px 20px; font-size:0.9em; }
+.empty-state h3 { color:#aaa; margin-bottom:10px; }
+#searchInput:focus { outline:none; border-color:#444; box-shadow:0 0 5px rgba(0,255,204,0.2); }
+.file-highlight { background-color:var(--file-bg); border-left:3px solid var(--file-color); padding:8px 12px; margin:10px 0; border-radius:0 4px 4px 0; position:relative; }
+.file-highlight::before { content:"ARQUIVO"; position:absolute; top:0; right:8px; font-size:0.7em; font-family:'VT323',monospace; color:var(--file-color); opacity:0.7; }
+.file-section { border:1px solid var(--file-color); padding:15px; margin:15px 0; background:rgba(0,153,255,0.05); }
+.file-section h3 { color:var(--file-color); margin-top:0; display:flex; align-items:center; gap:8px; }
+.file-section h3::before { content:"📁"; font-size:1.2em; }
+.file-item { padding:8px 10px; border-bottom:1px dashed rgba(0,153,255,0.3); display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:background 0.3s; }
+.file-item:hover { background:rgba(0,153,255,0.1); }
+.file-item:last-child { border-bottom:none; }
+.file-label { font-weight:bold; color:var(--file-color); font-size:0.9em; display:flex; align-items:center; gap:8px; }
+.file-label::before { content:"📄"; font-size:0.9em; }
+.file-info { color:#aaa; font-size:0.8em; text-align:right; display:flex; flex-direction:column; gap:2px; }
+.file-date { font-family:'Courier Prime',monospace; }
+.file-size { color:#777; font-size:0.75em; }
 </style>
 </head>
 
@@ -694,8 +226,24 @@ input[type="file"] {
 <div class="paper sidebar">
   <h1>CONSULTA DE ENTIDADES</h1>
   
+  <div class="github-container">
+    <label class="github-label">CONEXÃO DE DADOS EXTERNOS</label>
+    <div class="gh-input-group">
+      <input type="text" id="ghToken" placeholder="GitHub Token (Necessário p/ salvar)" type="password">
+      <input type="text" id="ghUser" placeholder="Usuário GitHub">
+      <input type="text" id="ghRepo" placeholder="Nome do Repositório">
+      <input type="text" id="ghPath" placeholder="Caminho/Pasta (Opcional)">
+    </div>
+    <div class="controls">
+        <button id="btnGhConnect" class="btn-gh">LISTAR ARQUIVOS</button>
+        <button id="btnGhSave" class="btn-gh" style="border-color:var(--glitch); color:var(--glitch)">SALVAR ANOMALIA ATUAL</button>
+    </div>
+    <div class="gh-status" id="ghStatus">Desconectado</div>
+    <div class="gh-file-list" id="ghFileList" style="display:none;"></div>
+  </div>
+
   <div class="import-container">
-    <label>IMPORTAR ARQUIVO JSON</label>
+    <label>IMPORTAR ARQUIVO LOCAL</label>
     <input type="file" id="jsonInput" accept="application/json">
   </div>
   
@@ -724,10 +272,6 @@ input[type="file"] {
     <button id="btnViewFiles">VER ARQUIVOS</button>
   </div>
   
-  <div class="net-controls">
-    <button id="btnNetwork">ACESSAR REDE C.C.O</button>
-  </div>
-  
   <div class="warning">
     ATENÇÃO: Terminal de consulta apenas.<br>
     NÃO ENCARAR. NÃO RESPONDER.
@@ -744,7 +288,7 @@ input[type="file"] {
     <div class="empty-state">
       <h3>NENHUMA ANOMALIA SELECIONADA</h3>
       <p>Selecione uma anomalia da lista para visualizar seu dossiê completo.</p>
-      <p>Ou importe um arquivo JSON para adicionar novos registros.</p>
+      <p>Ou conecte ao banco de dados externo para importar.</p>
     </div>
   </div>
   
@@ -752,7 +296,11 @@ input[type="file"] {
     <div class="file-section">
       <h3>ARQUIVOS IMPORTANTES</h3>
       <div id="filesList">
+        <div class="empty-state">
+          <p>Nenhum arquivo importante registrado.</p>
+          <p>Use "MARCAR COMO IMPORTANTE" para destacar esta anomalia.</p>
         </div>
+      </div>
     </div>
   </div>
 </div>
@@ -761,7 +309,15 @@ input[type="file"] {
 </div>
 
 <script>
-// FUNÇÕES DA TELA DE CARREGAMENTO (Mantidas originais)
+// FUNÇÕES DE UTILIDADE PARA UTF-8 BASE64 (Necessário para o GitHub suportar acentos)
+function utf8_to_b64(str) {
+    return window.btoa(unescape(encodeURIComponent(str)));
+}
+function b64_to_utf8(str) {
+    return decodeURIComponent(escape(window.atob(str)));
+}
+
+// FUNÇÕES DA TELA DE CARREGAMENTO
 function startLoadingScreen() {
   const consoleEl = document.getElementById('console-content');
   const progressBar = document.getElementById('loading-progress');
@@ -839,7 +395,6 @@ function startLoadingScreen() {
           const loadingScreen = document.getElementById('loading-screen');
           loadingScreen.style.opacity = '0';
           loadingScreen.style.transition = 'opacity 0.8s ease';
-          
           setTimeout(() => {
             loadingScreen.style.display = 'none';
             document.body.style.opacity = '1';
@@ -860,264 +415,241 @@ function startLoadingScreen() {
 function initializeMainSystem() {
   let saved = JSON.parse(localStorage.getItem('analog_entities') || '[]');
   let importantFiles = JSON.parse(localStorage.getItem('analog_files') || '[]');
-  
-  // Configurações do GitHub (armazenadas localmente para a sessão)
-  let ghConfig = JSON.parse(localStorage.getItem('cco_net_config') || '{"token":"", "owner":"", "repo":""}');
-  
   const glitchOverlay = document.querySelector('.glitch-overlay');
   let glitchInterval;
   let currentAnomalyIndex = -1;
   let currentSearchTerm = '';
   let viewingFiles = false;
-
   const el = id => document.getElementById(id);
 
-  // --- FUNÇÕES DE REDE GITHUB ---
-
-  // Codificar Unicode para Base64 corretamente
-  function utf8_to_b64(str) {
-    return window.btoa(unescape(encodeURIComponent(str)));
+  // --- GITHUB INTEGRATION LOGIC ---
+  
+  // Função auxiliar para processar dados importados (usada tanto pelo File Input quanto pelo GitHub)
+  function processImportedData(jsonData) {
+    try {
+        let anomalyData;
+        let filesToImport = [];
+        
+        if (jsonData.anomaly) {
+          // Formato novo completo
+          anomalyData = jsonData.anomaly;
+          if (jsonData.importantFiles && Array.isArray(jsonData.importantFiles)) {
+            filesToImport = jsonData.importantFiles;
+          }
+        } else if (jsonData.id) {
+          // Formato antigo
+          anomalyData = jsonData;
+        } else {
+          throw new Error('Formato JSON desconhecido.');
+        }
+        
+        if (!anomalyData.id) anomalyData.id = `ANOMALY_${Date.now()}`;
+        
+        const existingIndex = saved.findIndex(a => a.id === anomalyData.id);
+        if (existingIndex !== -1) {
+          if (confirm(`Anomalia "${anomalyData.id}" já existe. Substituir?`)) {
+            saved[existingIndex] = anomalyData;
+          } else {
+            return false;
+          }
+        } else {
+          saved.push(anomalyData);
+        }
+        
+        if (filesToImport.length > 0) {
+          filesToImport.forEach(fileData => {
+            const existingFileIndex = importantFiles.findIndex(f => f.id === fileData.id);
+            if (existingFileIndex !== -1) {
+              importantFiles[existingFileIndex] = fileData;
+            } else {
+              importantFiles.push(fileData);
+            }
+          });
+        }
+        
+        localStorage.setItem('analog_entities', JSON.stringify(saved));
+        localStorage.setItem('analog_files', JSON.stringify(importantFiles));
+        loadAnomalies(currentSearchTerm);
+        
+        // Carregar a importada
+        const newIndex = saved.findIndex(a => a.id === anomalyData.id);
+        loadAnomaly(newIndex);
+        
+        showNotification(`Dados importados: ${anomalyData.id}`);
+        return true;
+    } catch (error) {
+        alert('Erro ao processar dados: ' + error.message);
+        return false;
+    }
   }
 
-  // Abrir Modal de Rede
-  el('btnNetwork').addEventListener('click', () => {
-    showNetworkModal();
-  });
-
-  function showNetworkModal() {
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
+  // Listar Arquivos do GitHub
+  el('btnGhConnect').addEventListener('click', async () => {
+    const token = el('ghToken').value.trim();
+    const user = el('ghUser').value.trim();
+    const repo = el('ghRepo').value.trim();
+    const path = el('ghPath').value.trim();
     
-    // HTML do Modal
-    const content = `
-      <div class="modal-content" style="border-color: var(--net-color); box-shadow: 0 0 15px rgba(189,0,255,0.3);">
-        <div class="modal-header" style="color: var(--net-color);">
-          <span>🌐 REDE C.C.O - GITHUB UPLINK</span>
-          <button class="modal-close-btn" id="closeNetModal">×</button>
-        </div>
-        
-        <div style="margin-bottom: 20px; background: rgba(189,0,255,0.05); padding: 10px; border: 1px dashed var(--net-color);">
-          <label style="color: var(--net-color);">CONFIGURAÇÃO DE ACESSO</label>
-          <input type="text" id="ghOwner" placeholder="Usuário GitHub (Owner)" value="${ghConfig.owner || ''}" style="width:100%; margin-bottom:5px;">
-          <input type="text" id="ghRepo" placeholder="Nome do Repositório" value="${ghConfig.repo || ''}" style="width:100%; margin-bottom:5px;">
-          <input type="password" id="ghToken" placeholder="Personal Access Token" value="${ghConfig.token || ''}" style="width:100%;">
-          <div style="font-size: 0.7em; color: #777; margin-top: 5px;">*Token necessário apenas para UPLOAD. Dados salvos localmente.</div>
-          <button id="btnSaveConfig" style="margin-top: 10px; width: 100%; border-color: var(--net-color); color: var(--net-color);">SALVAR CREDENCIAIS</button>
-        </div>
-
-        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-          <div style="flex: 1;">
-            <label>DOWNLOAD (REDE -> LOCAL)</label>
-            <button id="btnFetchNet" style="width: 100%; padding: 10px;">LISTAR ANOMALIAS DA REDE</button>
-          </div>
-          <div style="flex: 1;">
-            <label>UPLOAD (LOCAL -> REDE)</label>
-            <button id="btnPushNet" style="width: 100%; padding: 10px; border-color: var(--net-color); color: var(--net-color);">ENVIAR ANOMALIA ATUAL</button>
-          </div>
-        </div>
-
-        <div id="netStatus" style="font-size: 0.8em; color: #aaa; min-height: 20px; text-align: center; margin-bottom: 10px;"></div>
-        
-        <div id="netFileList" style="max-height: 200px; overflow-y: auto; border: 1px solid #333; display: none;">
-          </div>
-      </div>
-    `;
-    
-    modal.innerHTML = content;
-    document.body.appendChild(modal);
-
-    // Eventos do Modal
-    el('closeNetModal').onclick = () => document.body.removeChild(modal);
-    
-    el('btnSaveConfig').onclick = () => {
-      ghConfig.owner = el('ghOwner').value.trim();
-      ghConfig.repo = el('ghRepo').value.trim();
-      ghConfig.token = el('ghToken').value.trim();
-      localStorage.setItem('cco_net_config', JSON.stringify(ghConfig));
-      el('netStatus').textContent = "Credenciais salvas localmente.";
-      el('netStatus').style.color = "#00cc66";
-    };
-
-    el('btnFetchNet').onclick = async () => {
-      if(!ghConfig.owner || !ghConfig.repo) {
-        el('netStatus').textContent = "Erro: Configure Usuário e Repositório.";
-        el('netStatus').style.color = "#ff3333";
+    if (!user || !repo) {
+        showNotification("Erro: Usuário e Repositório são obrigatórios.");
         return;
-      }
-      el('netStatus').textContent = "Buscando arquivos na rede...";
-      el('netFileList').style.display = 'block';
-      el('netFileList').innerHTML = '<div style="padding:10px; text-align:center;">Carregando...</div>';
-      
-      try {
-        const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/`;
-        // Para leitura publica nao precisa de token, mas se tiver, usa
-        const headers = ghConfig.token ? { 'Authorization': `token ${ghConfig.token}` } : {};
+    }
+
+    el('ghStatus').textContent = "Conectando...";
+    el('ghFileList').style.display = 'block';
+    el('ghFileList').innerHTML = '<div style="padding:5px; color:#aaa;">Buscando arquivos...</div>';
+
+    let url = `https://api.github.com/repos/${user}/${repo}/contents`;
+    if (path) url += `/${path}`;
+
+    try {
+        const headers = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
         
         const response = await fetch(url, { headers });
-        if(!response.ok) throw new Error(response.statusText);
+        if (!response.ok) throw new Error(`Erro API: ${response.status}`);
         
         const data = await response.json();
-        const jsonFiles = data.filter(f => f.name.endsWith('.json'));
+        el('ghFileList').innerHTML = '';
         
-        el('netFileList').innerHTML = '';
-        if(jsonFiles.length === 0) {
-          el('netFileList').innerHTML = '<div style="padding:10px; text-align:center;">Nenhum arquivo JSON encontrado.</div>';
-          return;
+        if (Array.isArray(data)) {
+            const jsonFiles = data.filter(f => f.name.endsWith('.json'));
+            el('ghStatus').textContent = `${jsonFiles.length} arquivos encontrados.`;
+            
+            if (jsonFiles.length === 0) {
+                el('ghFileList').innerHTML = '<div style="padding:5px;">Nenhum JSON encontrado nesta pasta.</div>';
+            }
+
+            jsonFiles.forEach(file => {
+                const item = document.createElement('div');
+                item.className = 'gh-file-item';
+                item.innerHTML = `<span>${file.name}</span> <span>⬇</span>`;
+                item.addEventListener('click', () => loadGithubFile(file.url, token));
+                el('ghFileList').appendChild(item);
+            });
+        } else {
+            el('ghStatus').textContent = "Caminho não é uma pasta.";
         }
+    } catch (err) {
+        el('ghStatus').textContent = "Erro na conexão.";
+        el('ghFileList').innerHTML = `<div style="padding:5px; color:var(--danger);">${err.message}</div>`;
+    }
+  });
 
-        jsonFiles.forEach(file => {
-          const item = document.createElement('div');
-          item.style.padding = '8px';
-          item.style.borderBottom = '1px solid #333';
-          item.style.cursor = 'pointer';
-          item.style.display = 'flex';
-          item.style.justifyContent = 'space-between';
-          item.innerHTML = `<span>${file.name}</span> <span style="color:var(--glitch)">[BAIXAR]</span>`;
-          
-          item.onclick = async () => {
-             // Download e Importação
-             item.innerHTML = `<span>${file.name}</span> <span style="color:#ffff00">[BAIXANDO...]</span>`;
-             try {
-                const fRes = await fetch(file.download_url);
-                const fJson = await fRes.json();
-                processImport(fJson); // Usa a função de importação existente
-                item.innerHTML = `<span>${file.name}</span> <span style="color:#00cc66">[IMPORTADO]</span>`;
-                loadAnomalies(currentSearchTerm);
-                showNotification(`Anomalia ${file.name} importada.`);
-             } catch(e) {
-                item.innerHTML = `<span>${file.name}</span> <span style="color:#ff3333">[ERRO]</span>`;
-                alert('Erro ao baixar: ' + e.message);
-             }
-          };
-          
-          item.onmouseover = () => item.style.background = '#222';
-          item.onmouseout = () => item.style.background = 'transparent';
-          el('netFileList').appendChild(item);
-        });
+  // Carregar um arquivo específico do GitHub
+  async function loadGithubFile(url, token) {
+    showNotification("Baixando arquivo...");
+    try {
+        const headers = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
         
-        el('netStatus').textContent = `${jsonFiles.length} arquivos encontrados.`;
+        const response = await fetch(url, { headers });
+        const data = await response.json();
+        
+        // O conteúdo vem em base64
+        const content = b64_to_utf8(data.content);
+        const json = JSON.parse(content);
+        
+        processImportedData(json);
+    } catch (err) {
+        showNotification("Erro ao baixar: " + err.message);
+    }
+  }
 
-      } catch(e) {
-        el('netStatus').textContent = "Erro de conexão: " + e.message;
-        el('netFileList').innerHTML = `<div style="padding:10px; color:#ff3333">Erro: ${e.message}</div>`;
-      }
-    };
-
-    el('btnPushNet').onclick = async () => {
-      if(!ghConfig.token || !ghConfig.owner || !ghConfig.repo) {
-        el('netStatus').textContent = "Erro: Token, Usuário e Repo são obrigatórios para Upload.";
-        el('netStatus').style.color = "#ff3333";
+  // Salvar Anomalia Atual no GitHub
+  el('btnGhSave').addEventListener('click', async () => {
+    if (currentAnomalyIndex < 0 || currentAnomalyIndex >= saved.length) {
+        showNotification("Selecione uma anomalia para salvar.");
         return;
-      }
+    }
 
-      if (currentAnomalyIndex < 0 || currentAnomalyIndex >= saved.length) {
-        el('netStatus').textContent = "Erro: Selecione uma anomalia na lista primeiro.";
+    const token = el('ghToken').value.trim();
+    const user = el('ghUser').value.trim();
+    const repo = el('ghRepo').value.trim();
+    const path = el('ghPath').value.trim();
+
+    if (!token) {
+        alert("ATENÇÃO: Para salvar no GitHub, o TOKEN é obrigatório.");
         return;
-      }
-      
-      const anomaly = saved[currentAnomalyIndex];
-      const anomalyFiles = importantFiles.filter(f => f.anomalyId === anomaly.id);
-      
-      // Montar objeto COMPLETO
-      const exportObj = {
+    }
+    if (!user || !repo) {
+        alert("Configure Usuário e Repositório.");
+        return;
+    }
+
+    const anomaly = saved[currentAnomalyIndex];
+    const relatedFiles = importantFiles.filter(f => f.anomalyId === anomaly.id);
+    
+    // Montar objeto completo
+    const exportData = {
         anomaly: anomaly,
-        importantFiles: anomalyFiles,
+        importantFiles: relatedFiles,
         exportDate: new Date().toISOString(),
         exportVersion: "1.0",
-        system: "C.C.O - Upload via Rede"
-      };
-
-      const fileName = `${anomaly.id.replace(/[^a-z0-9]/gi, '_')}_COMPLETO.json`;
-      const content = utf8_to_b64(JSON.stringify(exportObj, null, 2));
-      
-      el('netStatus').textContent = `Enviando ${fileName}...`;
-      el('netStatus').style.color = "#ffff00";
-
-      try {
-        // Verificar se arquivo já existe para pegar o SHA (update)
-        const checkUrl = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${fileName}`;
-        let sha = null;
-        
-        const checkRes = await fetch(checkUrl, { 
-           headers: { 'Authorization': `token ${ghConfig.token}` } 
-        });
-        
-        if(checkRes.ok) {
-           const checkData = await checkRes.json();
-           sha = checkData.sha;
-        }
-
-        // PUT request
-        const body = {
-          message: `Update anomaly ${anomaly.id} via C.C.O Terminal`,
-          content: content
-        };
-        if(sha) body.sha = sha;
-
-        const putRes = await fetch(checkUrl, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `token ${ghConfig.token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(body)
-        });
-
-        if(!putRes.ok) throw new Error(putRes.statusText);
-        
-        el('netStatus').textContent = "Upload concluído com sucesso!";
-        el('netStatus').style.color = "#00cc66";
-        showNotification("Arquivo enviado para a nuvem.");
-
-      } catch(e) {
-        el('netStatus').textContent = "Erro no Upload: " + e.message;
-        el('netStatus').style.color = "#ff3333";
-      }
+        system: "C.C.O - Central de Contenção de Objetos Anômalos"
     };
-  }
-  
-  // Função auxiliar para processar importação (extraída do listener original para reuso)
-  function processImport(jsonData) {
-    let anomalyData;
-    let filesToImport = [];
+
+    const contentStr = JSON.stringify(exportData, null, 2);
+    const contentBase64 = utf8_to_b64(contentStr);
     
-    if (jsonData.anomaly) {
-      anomalyData = jsonData.anomaly;
-      if (jsonData.importantFiles && Array.isArray(jsonData.importantFiles)) {
-        filesToImport = jsonData.importantFiles;
-      }
-    } else if (jsonData.id) {
-      anomalyData = jsonData;
-    } else {
-      throw new Error('Formato JSON inválido.');
-    }
+    // Nome do arquivo seguro
+    const safeId = anomaly.id.replace(/[^a-z0-9]/gi, '_').toUpperCase();
+    const fileName = `${safeId}_COMPLETO.json`;
     
-    if (!anomalyData.id) anomalyData.id = `ANOMALY_${Date.now()}`;
-    
-    const existingIndex = saved.findIndex(a => a.id === anomalyData.id);
-    if (existingIndex !== -1) {
-      saved[existingIndex] = anomalyData;
-    } else {
-      saved.push(anomalyData);
-    }
-    
-    if (filesToImport.length > 0) {
-      filesToImport.forEach(fileData => {
-        const existingFileIndex = importantFiles.findIndex(f => f.id === fileData.id);
-        if (existingFileIndex !== -1) {
-          importantFiles[existingFileIndex] = fileData;
+    let url = `https://api.github.com/repos/${user}/${repo}/contents`;
+    if (path) url += `/${path}`;
+    url += `/${fileName}`;
+
+    showNotification(`Enviando ${fileName}...`);
+    el('ghStatus').textContent = "Enviando...";
+
+    try {
+        // Verificar se arquivo já existe para pegar o SHA (necessário para update)
+        let sha = null;
+        try {
+            const checkResp = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (checkResp.ok) {
+                const fileData = await checkResp.json();
+                sha = fileData.sha;
+            }
+        } catch (e) {} // Ignora erro se arquivo não existe
+
+        const body = {
+            message: `Update C.C.O: ${anomaly.id}`,
+            content: contentBase64
+        };
+        if (sha) body.sha = sha;
+
+        const putResp = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (putResp.ok) {
+            showNotification("Arquivo salvo no GitHub com sucesso!");
+            el('ghStatus').textContent = "Upload concluído.";
+            // Atualiza a lista se estiver aberta
+            el('btnGhConnect').click();
         } else {
-          importantFiles.push(fileData);
+            const errData = await putResp.json();
+            throw new Error(errData.message);
         }
-      });
+
+    } catch (err) {
+        alert(`Erro ao salvar no GitHub: ${err.message}`);
+        el('ghStatus').textContent = "Erro no upload.";
     }
-    
-    localStorage.setItem('analog_entities', JSON.stringify(saved));
-    localStorage.setItem('analog_files', JSON.stringify(importantFiles));
-  }
+  });
 
-  // --- FIM FUNÇÕES DE REDE ---
+  // --- FIM DA LÓGICA GITHUB ---
 
+  // Carregar anomalias salvas (lógica original)
   function loadAnomalies(searchTerm = '') {
     const anomalyList = el('anomalyList');
     currentSearchTerm = searchTerm;
@@ -1145,7 +677,7 @@ function initializeMainSystem() {
       emptyItem.className = 'anomaly-item';
       emptyItem.innerHTML = searchTerm.trim() 
         ? '<div class="anomaly-id">NENHUM RESULTADO</div><div class="anomaly-threat">Tente outros termos</div>'
-        : '<div class="anomaly-id">NENHUMA ANOMALIA</div><div class="anomaly-threat">Importe ou baixe da Rede</div>';
+        : '<div class="anomaly-id">NENHUMA ANOMALIA</div><div class="anomaly-threat">Importe um arquivo JSON</div>';
       anomalyList.appendChild(emptyItem);
       return;
     }
@@ -1258,7 +790,6 @@ function initializeMainSystem() {
     try {
       const binaryString = binary.replace(/\s+/g, '');
       if (!binaryString.match(/^[01]+$/)) return binary;
-      
       let text = '';
       for (let i = 0; i < binaryString.length; i += 8) {
         const byte = binaryString.substr(i, 8);
@@ -1275,7 +806,7 @@ function initializeMainSystem() {
     const severityMap = {
       'irreversivel': 'Irreversível',
       'fatal': 'Fatal',
-      'biologico': 'Biologicamente destrutivo'
+      'biologico': 'Biologicamente destrutivo',
     };
     return severityMap[severity] || severity;
   }
@@ -1336,7 +867,6 @@ function initializeMainSystem() {
     anomalyFiles.forEach((file, index) => {
       const fileItem = document.createElement('div');
       fileItem.className = 'file-item';
-      
       const date = new Date(file.date);
       const dateStr = date.toLocaleDateString('pt-BR');
       const timeStr = date.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
@@ -1350,7 +880,6 @@ function initializeMainSystem() {
           <div class="file-size">${sizeLabel}</div>
         </div>
       `;
-      
       fileItem.addEventListener('click', () => viewFileDetails(file));
       filesList.appendChild(fileItem);
     });
@@ -1358,17 +887,15 @@ function initializeMainSystem() {
     const clearBtn = document.createElement('button');
     clearBtn.textContent = 'LIMPAR ARQUIVOS DESTA ANOMALIA';
     clearBtn.style.cssText = `margin-top:15px; width:100%; padding:8px; background:rgba(179, 0, 0, 0.1); border:1px solid #b30000; color:#ff6666; font-family:'Courier Prime',monospace; cursor:pointer;`;
-    
     clearBtn.addEventListener('click', () => {
-      if (confirm(`Remover todos os ${anomalyFiles.length} arquivo(s) importantes registrados para esta anomalia?`)) {
+      if (confirm(`Remover todos os ${anomalyFiles.length} arquivo(s) importantes desta anomalia?`)) {
         importantFiles = importantFiles.filter(f => f.anomalyId !== anomalyId);
         localStorage.setItem('analog_files', JSON.stringify(importantFiles));
         loadFilesForAnomaly(anomalyId);
         loadAnomalies(currentSearchTerm);
-        showNotification('Arquivos removidos com sucesso.');
+        showNotification('Arquivos removidos.');
       }
     });
-    
     filesList.appendChild(clearBtn);
   }
 
@@ -1377,52 +904,37 @@ function initializeMainSystem() {
     if (!anomaly) return;
     
     let details = `ARQUIVO IMPORTANTE\n===================\nAnomalia: ${anomaly.id}\n\nCONTEÚDO DO ARQUIVO:\n--------------------\n`;
-    
     if (file.notes) {
       details += file.notes;
     } else {
-      details += `Arquivo marcado como importante.\n\nDADOS DA ANOMALIA:\n• Ameaça: ${anomaly.threat || 'Não especificada'}\n• Classificação: ${getSeverityText(anomaly.severity)}\n`;
-      if (anomaly.visual) details += `• ${anomaly.visual.substring(0, 100)}${anomaly.visual.length > 100 ? '...' : ''}\n`;
+      details += `Arquivo marcado como importante.\n\nDados: ${anomaly.threat}, ${getSeverityText(anomaly.severity)}`;
     }
     
     const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    
+    modal.style.cssText = `position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:10000;`;
     const modalContent = document.createElement('div');
-    modalContent.className = 'modal-content';
-    modalContent.style.borderColor = 'var(--file-color)';
-    modalContent.style.boxShadow = '0 0 20px rgba(0,153,255,0.3)';
-    
+    modalContent.style.cssText = `background:#141414; border:1px solid var(--file-color); padding:20px; max-width:500px; width:90%; max-height:80vh; overflow-y:auto; font-family:'Courier Prime',monospace; white-space:pre-wrap; color:#e8e8e8; box-shadow:0 0 20px rgba(0,153,255,0.3);`;
     modalContent.innerHTML = `
-      <div style="color:var(--file-color); font-family:'VT323',monospace; font-size:1.2em; margin-bottom:10px; border-bottom:1px solid var(--file-color); padding-bottom:5px;">
-        📁 ARQUIVO IMPORTANTE
-      </div>
-      <div style="font-size:0.9em; line-height:1.6; margin-bottom:15px; white-space:pre-wrap;">${details}</div>
+      <div style="color:var(--file-color); font-family:'VT323',monospace; font-size:1.2em; margin-bottom:10px; border-bottom:1px solid var(--file-color); padding-bottom:5px;">📁 ARQUIVO IMPORTANTE</div>
+      <div style="font-size:0.9em; line-height:1.6; margin-bottom:15px;">${details}</div>
       <div style="margin-top:20px; display:flex; gap:10px;">
         <button id="modalClose" style="flex:1; padding:8px; background:#333; border:1px solid #444; color:#e8e8e8; cursor:pointer; font-family:'Courier Prime',monospace;">FECHAR</button>
         <button id="modalDelete" style="flex:1; padding:8px; background:rgba(179,0,0,0.2); border:1px solid #b30000; color:#ff6666; cursor:pointer; font-family:'Courier Prime',monospace;">REMOVER ARQUIVO</button>
       </div>
     `;
-    
     modal.appendChild(modalContent);
     document.body.appendChild(modal);
-    
     el('modalClose').addEventListener('click', () => document.body.removeChild(modal));
-    
     el('modalDelete').addEventListener('click', () => {
       if (confirm('Remover este arquivo permanentemente?')) {
         importantFiles = importantFiles.filter(f => f.id !== file.id);
         localStorage.setItem('analog_files', JSON.stringify(importantFiles));
         document.body.removeChild(modal);
         loadFilesForAnomaly(file.anomalyId);
-        loadAnomalies(currentSearchTerm);
         showNotification('Arquivo removido.');
       }
     });
-    
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) document.body.removeChild(modal);
-    });
+    modal.addEventListener('click', (e) => { if (e.target === modal) document.body.removeChild(modal); });
   }
 
   el('btnMarkFile').addEventListener('click', () => {
@@ -1430,28 +942,19 @@ function initializeMainSystem() {
       showNotification('Selecione uma anomalia primeiro.');
       return;
     }
-    
     const anomaly = saved[currentAnomalyIndex];
     const existingFile = importantFiles.find(f => f.anomalyId === anomaly.id);
+    if (existingFile && !confirm(`Já existe um arquivo para "${anomaly.id}". Atualizar?`)) return;
     
-    if (existingFile) {
-      if (!confirm(`Já existe um arquivo importante para "${anomaly.id}".\nDeseja atualizá-lo com novas informações?`)) return;
-    }
-    
-    const addNotes = confirm(`Criar arquivo importante para "${anomaly.id}"\n\nDeseja adicionar anotações ao arquivo? (Cancelar para usar dados padrão)`);
-    let notes = '';
-    let label = `Arquivo - ${anomaly.id}`;
-    
+    const addNotes = confirm(`Criar arquivo para "${anomaly.id}"\n\nDeseja adicionar anotações?`);
+    let notes = '', label = `Arquivo - ${anomaly.id}`;
     if (addNotes) {
-      notes = prompt('Digite suas anotações para este arquivo importante:', '');
+      notes = prompt('Anotações:', '');
       if (notes === null) return;
-      const customLabel = prompt('Título do arquivo (opcional):', label);
-      if (customLabel !== null && customLabel.trim() !== '') label = customLabel.trim();
+      const customLabel = prompt('Título (opcional):', label);
+      if (customLabel) label = customLabel.trim();
     } else {
-      notes = `ARQUIVO IMPORTANTE - CLASSIFICAÇÃO: ${getSeverityText(anomaly.severity)}\n============================================\n\nANOMALIA: ${anomaly.id}\nAMEAÇA: ${anomaly.threat || 'Não classificada'}\nDATA DO REGISTRO: ${anomaly.date ? new Date(anomaly.date).toLocaleString('pt-BR') : 'Não registrada'}\n\n`;
-      if (anomaly.visual) notes += `RELATO VISUAL:\n${anomaly.visual}\n\n`;
-      if (anomaly.behavior) notes += `COMPORTAMENTO:\n${anomaly.behavior}\n\n`;
-      if (anomaly.effects) notes += `EFEITOS DOCUMENTADOS:\n${anomaly.effects}\n\n`;
+      notes = `ARQUIVO IMPORTANTE - ${anomaly.id}\nAMEAÇA: ${anomaly.threat}\nDATA: ${new Date().toLocaleString('pt-BR')}`;
     }
     
     const file = {
@@ -1472,8 +975,7 @@ function initializeMainSystem() {
     localStorage.setItem('analog_files', JSON.stringify(importantFiles));
     loadAnomalies(currentSearchTerm);
     if (viewingFiles) loadFilesForAnomaly(anomaly.id);
-    
-    showNotification(`Arquivo importante criado para "${anomaly.id}"`);
+    showNotification(`Arquivo criado para "${anomaly.id}"`);
   });
 
   el('btnViewFiles').addEventListener('click', () => {
@@ -1499,21 +1001,11 @@ function initializeMainSystem() {
   el('jsonInput').addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
-    
     const reader = new FileReader();
     reader.onload = ev => {
-      try {
-        const jsonData = JSON.parse(ev.target.result);
-        processImport(jsonData);
-        loadAnomalies(currentSearchTerm);
+        const json = JSON.parse(ev.target.result);
+        processImportedData(json);
         el('jsonInput').value = '';
-        
-        // Carregar a anomalia recém-importada
-        // (Simplificação: recarrega a busca para achar a nova)
-        showNotification(`Anomalia importada com sucesso!`);
-      } catch (error) {
-        alert('ERRO: Arquivo JSON inválido. ' + error.message);
-      }
     };
     reader.readAsText(file);
   });
@@ -1521,62 +1013,33 @@ function initializeMainSystem() {
   el('btnSearch').addEventListener('click', () => {
     const searchTerm = el('searchInput').value;
     loadAnomalies(searchTerm);
-    
     const filteredAnomalies = saved.filter(anomaly => 
       searchTerm.trim() && (
         (anomaly.id && anomaly.id.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (anomaly.threat && anomaly.threat.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     );
-    
     if (filteredAnomalies.length > 0) {
-      const firstAnomaly = filteredAnomalies[0];
-      const originalIndex = saved.findIndex(a => a.id === firstAnomaly.id);
-      loadAnomaly(originalIndex);
+      loadAnomaly(saved.findIndex(a => a.id === filteredAnomalies[0].id));
     } else if (searchTerm.trim()) {
       clearDossier();
     }
   });
 
-  el('searchInput').addEventListener('keypress', e => {
-    if (e.key === 'Enter') el('btnSearch').click();
-  });
-
-  el('btnClearSearch').addEventListener('click', () => {
-    el('searchInput').value = '';
-    loadAnomalies('');
-    if (saved.length > 0) {
-      loadAnomaly(0);
-    } else {
-      clearDossier();
-    }
-  });
-
+  el('searchInput').addEventListener('keypress', e => { if (e.key === 'Enter') el('btnSearch').click(); });
+  el('btnClearSearch').addEventListener('click', () => { el('searchInput').value = ''; loadAnomalies(''); if (saved.length > 0) loadAnomaly(0); else clearDossier(); });
   el('btnClearAll').addEventListener('click', () => {
-    if (saved.length === 0 && importantFiles.length === 0) {
-      showNotification('Nenhum registro para limpar.');
-      return;
-    }
-    
-    if (confirm('⚠️ ATENÇÃO: Esta ação irá apagar TODOS os registros locais. Continuar?')) {
+    if (confirm('⚠️ ATENÇÃO: Apagar TODOS os registros locais?')) {
       localStorage.removeItem('analog_entities');
       localStorage.removeItem('analog_files');
-      saved = [];
-      importantFiles = [];
-      loadAnomalies('');
-      clearDossier();
-      showNotification('Todos os registros foram apagados.');
+      saved = []; importantFiles = [];
+      loadAnomalies(''); clearDossier();
+      showNotification('Registros apagados.');
     }
   });
 
   function clearDossier() {
-    el('dossierContent').innerHTML = `
-      <div class="empty-state">
-        <h3>NENHUMA ANOMALIA SELECIONADA</h3>
-        <p>Selecione uma anomalia da lista para visualizar seu dossiê completo.</p>
-        <p>Ou importe um arquivo JSON para adicionar novos registros.</p>
-      </div>
-    `;
+    el('dossierContent').innerHTML = `<div class="empty-state"><h3>NENHUMA ANOMALIA SELECIONADA</h3><p>Selecione uma anomalia.</p></div>`;
     currentAnomalyIndex = -1;
     document.body.classList.remove('tremor-1', 'tremor-2', 'bio', 'glitch-active');
     if (glitchInterval) clearInterval(glitchInterval);
@@ -1588,26 +1051,15 @@ function initializeMainSystem() {
 
   function showNotification(message) {
     const notification = document.createElement('div');
-    notification.style.cssText = `
-      position:fixed; top:20px; right:20px; background:#141414; border:1px solid #333;
-      padding:10px 15px; color:#e8e8e8; font-family:'Courier Prime',monospace; font-size:0.9em;
-      z-index:10000; box-shadow:0 0 10px rgba(0,0,0,0.5); border-left:3px solid var(--glitch);
-      animation:slideIn 0.3s ease-out;
-    `;
-    
+    notification.style.cssText = `position:fixed; top:20px; right:20px; background:#141414; border:1px solid #333; padding:10px 15px; color:#e8e8e8; font-family:'Courier Prime',monospace; font-size:0.9em; z-index:10000; box-shadow:0 0 10px rgba(0,0,0,0.5); border-left:3px solid var(--glitch); animation:slideIn 0.3s ease-out;`;
     const style = document.createElement('style');
     style.textContent = `@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } } @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }`;
     document.head.appendChild(style);
-    
     notification.textContent = message;
     document.body.appendChild(notification);
-    
     setTimeout(() => {
       notification.style.animation = 'slideOut 0.3s ease-out';
-      setTimeout(() => {
-        document.body.removeChild(notification);
-        document.head.removeChild(style);
-      }, 300);
+      setTimeout(() => { document.body.removeChild(notification); document.head.removeChild(style); }, 300);
     }, 3000);
   }
 
