@@ -3,9 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ARQUIVO RESTRITO — CONSULTA DE ENTIDADES</title>
+<title>ARQUIVO RESTRITO — CONSULTA DE ENTIDADES (ONLINE)</title>
 
 <link href="https://fonts.googleapis.com/css2?family=VT323&family=Courier+Prime&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
 <style>
 :root{
@@ -16,6 +19,7 @@
   --glitch:#00ffcc;
   --file-color:#0099ff;
   --file-bg:rgba(0, 153, 255, 0.08);
+  --sync-color: #ff9900;
 }
 
 /* ESTILOS DA TELA DE CARREGAMENTO */
@@ -82,40 +86,11 @@
   white-space: pre-wrap;
 }
 
-.console-line.prompt {
-  color: var(--glitch);
-}
-
-.console-line.system {
-  color: #00aaff;
-}
-
-.console-line.warning {
-  color: #ff9900;
-}
-
-.console-line.error {
-  color: #ff3333;
-}
-
-.console-line.success {
-  color: #00cc66;
-}
-
-.blinking-cursor {
-  display: inline-block;
-  width: 8px;
-  height: 16px;
-  background: var(--glitch);
-  margin-left: 5px;
-  animation: blink 1s infinite;
-  vertical-align: middle;
-}
-
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
-}
+.console-line.prompt { color: var(--glitch); }
+.console-line.system { color: #00aaff; }
+.console-line.warning { color: #ff9900; }
+.console-line.error { color: #ff3333; }
+.console-line.success { color: #00cc66; }
 
 .loading-logo {
   margin-bottom: 30px;
@@ -249,7 +224,6 @@ body{
   to { opacity: 1; }
 }
 
-/* Efeito de glitch na página inteira */
 .glitch-overlay{
   position:fixed;
   top:0;
@@ -270,36 +244,12 @@ body.glitch-active .glitch-overlay{
 }
 
 @keyframes fullGlitch{
-  0%{
-    opacity:0.1;
-    transform:translateX(0);
-    clip-path:inset(0 0 0 0);
-  }
-  2%{
-    opacity:0.3;
-    transform:translateX(-2px);
-    clip-path:inset(20% 0 60% 0);
-  }
-  4%{
-    opacity:0.1;
-    transform:translateX(2px);
-    clip-path:inset(60% 0 20% 0);
-  }
-  6%{
-    opacity:0.4;
-    transform:translateX(-1px);
-    clip-path:inset(10% 0 40% 0);
-  }
-  8%{
-    opacity:0.1;
-    transform:translateX(1px);
-    clip-path:inset(40% 0 10% 0);
-  }
-  100%{
-    opacity:0.1;
-    transform:translateX(0);
-    clip-path:inset(0 0 0 0);
-  }
+  0%{ opacity:0.1; transform:translateX(0); clip-path:inset(0 0 0 0); }
+  2%{ opacity:0.3; transform:translateX(-2px); clip-path:inset(20% 0 60% 0); }
+  4%{ opacity:0.1; transform:translateX(2px); clip-path:inset(60% 0 20% 0); }
+  6%{ opacity:0.4; transform:translateX(-1px); clip-path:inset(10% 0 40% 0); }
+  8%{ opacity:0.1; transform:translateX(1px); clip-path:inset(40% 0 10% 0); }
+  100%{ opacity:0.1; transform:translateX(0); clip-path:inset(0 0 0 0); }
 }
 
 body.tremor-1{animation:tremor .6s infinite}
@@ -345,6 +295,26 @@ h1,h2,h3{
   text-align:center;
 }
 
+/* Indicador de Status Online */
+.connection-status {
+    text-align: center;
+    font-size: 0.8em;
+    padding: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #333;
+    background: #000;
+}
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #555;
+    margin-right: 5px;
+}
+.status-indicator.online { background: #00cc66; box-shadow: 0 0 5px #00cc66; }
+.status-indicator.offline { background: #ff3333; }
+
 label{font-size:.85em;color:#aaa;display:block;margin-bottom:5px;}
 
 input,textarea,select,button{
@@ -366,7 +336,6 @@ button:hover{
   background:#222;
 }
 
-/* Sidebar mais compacta */
 .sidebar {
   display:flex;
   flex-direction:column;
@@ -511,14 +480,9 @@ img{
   border:1px solid #333;
   transition:transform .4s, filter .3s;
   position:relative;
-}
-
-/* Filtro escuro base para todas as imagens */
-img{
   filter:brightness(0.8) contrast(1.1);
 }
 
-/* imagem biologicamente destrutiva - COM FILTRO ESCURO INTENSIFICADO */
 body.bio img{
   transform:scale(1.15);
   filter:brightness(0.6) contrast(1.3) hue-rotate(10deg) saturate(1.5);
@@ -526,33 +490,14 @@ body.bio img{
 }
 
 @keyframes imageGlitch{
-  0%{
-    clip-path:inset(0 0 0 0);
-    filter:brightness(0.6) contrast(1.3) hue-rotate(10deg) saturate(1.5);
-  }
-  20%{
-    clip-path:inset(10% 0 20% 0);
-    filter:brightness(0.5) contrast(1.5) hue-rotate(15deg) saturate(2) sepia(0.3);
-  }
-  40%{
-    clip-path:inset(0 20% 0 10%);
-    filter:brightness(0.7) contrast(1.2) hue-rotate(5deg) saturate(1.3) invert(0.1);
-  }
-  60%{
-    clip-path:inset(20% 0 10% 0);
-    filter:brightness(0.5) contrast(1.6) hue-rotate(20deg) saturate(2.2);
-  }
-  80%{
-    clip-path:inset(0 10% 0 20%);
-    filter:brightness(0.6) contrast(1.4) hue-rotate(12deg) saturate(1.8);
-  }
-  100%{
-    clip-path:inset(0 0 0 0);
-    filter:brightness(0.6) contrast(1.3) hue-rotate(10deg) saturate(1.5);
-  }
+  0%{ clip-path:inset(0 0 0 0); filter:brightness(0.6) contrast(1.3) hue-rotate(10deg) saturate(1.5); }
+  20%{ clip-path:inset(10% 0 20% 0); filter:brightness(0.5) contrast(1.5) hue-rotate(15deg) saturate(2) sepia(0.3); }
+  40%{ clip-path:inset(0 20% 0 10%); filter:brightness(0.7) contrast(1.2) hue-rotate(5deg) saturate(1.3) invert(0.1); }
+  60%{ clip-path:inset(20% 0 10% 0); filter:brightness(0.5) contrast(1.6) hue-rotate(20deg) saturate(2.2); }
+  80%{ clip-path:inset(0 10% 0 20%); filter:brightness(0.6) contrast(1.4) hue-rotate(12deg) saturate(1.8); }
+  100%{ clip-path:inset(0 0 0 0); filter:brightness(0.6) contrast(1.3) hue-rotate(10deg) saturate(1.5); }
 }
 
-/* Efeito de distorção no texto quando em modo bio */
 body.bio .paper{
   animation:textDistort 5s infinite;
 }
@@ -567,44 +512,23 @@ body.bio .paper{
   100%{transform:translateX(0)}
 }
 
-/* Efeito de scanlines */
 .scanlines{
   position:fixed;
   top:0;
   left:0;
   width:100%;
   height:100%;
-  background:linear-gradient(
-    to bottom,
-    transparent 50%,
-    rgba(0,0,0,0.1) 50%
-  );
+  background:linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.1) 50%);
   background-size:100% 4px;
   pointer-events:none;
   z-index:999;
   opacity:0.3;
 }
 
-.dossier-content {
-  min-height:600px;
-}
-
-.dossier-section {
-  margin-bottom:15px;
-  padding-bottom:15px;
-  border-bottom:1px solid #2a2a2a;
-}
-
-.dossier-section:last-child {
-  border-bottom:none;
-}
-
-.dossier-section p {
-  line-height:1.5;
-  white-space:pre-wrap;
-  margin:8px 0;
-  font-size:0.95em;
-}
+.dossier-content { min-height:600px; }
+.dossier-section { margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid #2a2a2a; }
+.dossier-section:last-child { border-bottom:none; }
+.dossier-section p { line-height:1.5; white-space:pre-wrap; margin:8px 0; font-size:0.95em; }
 
 .empty-state {
   text-align:center;
@@ -612,46 +536,10 @@ body.bio .paper{
   padding:40px 20px;
   font-size:0.9em;
 }
+.empty-state h3 { color:#aaa; margin-bottom:10px; }
 
-.empty-state h3 {
-  color:#aaa;
-  margin-bottom:10px;
-}
-
-/* Estilo para o input de arquivo */
-input[type="file"] {
-  width:100%;
-  padding:5px;
-  font-size:0.8em;
-}
-
-/* Efeito de foco na pesquisa */
-#searchInput:focus {
-  outline:none;
-  border-color:#444;
-  box-shadow:0 0 5px rgba(0,255,204,0.2);
-}
-
-/* Estilo para arquivos importantes */
-.file-highlight {
-  background-color:var(--file-bg);
-  border-left:3px solid var(--file-color);
-  padding:8px 12px;
-  margin:10px 0;
-  border-radius:0 4px 4px 0;
-  position:relative;
-}
-
-.file-highlight::before {
-  content:"ARQUIVO";
-  position:absolute;
-  top:0;
-  right:8px;
-  font-size:0.7em;
-  font-family:'VT323',monospace;
-  color:var(--file-color);
-  opacity:0.7;
-}
+input[type="file"] { width:100%; padding:5px; font-size:0.8em; }
+#searchInput:focus { outline:none; border-color:#444; box-shadow:0 0 5px rgba(0,255,204,0.2); }
 
 .file-section {
   border:1px solid var(--file-color);
@@ -667,11 +555,7 @@ input[type="file"] {
   align-items:center;
   gap:8px;
 }
-
-.file-section h3::before {
-  content:"📁";
-  font-size:1.2em;
-}
+.file-section h3::before { content:"📁"; font-size:1.2em; }
 
 .file-item {
   padding:8px 10px;
@@ -682,46 +566,15 @@ input[type="file"] {
   cursor:pointer;
   transition:background 0.3s;
 }
+.file-item:hover { background:rgba(0,153,255,0.1); }
+.file-item:last-child { border-bottom:none; }
 
-.file-item:hover {
-  background:rgba(0,153,255,0.1);
-}
+.file-label { font-weight:bold; color:var(--file-color); font-size:0.9em; display:flex; align-items:center; gap:8px; }
+.file-label::before { content:"📄"; font-size:0.9em; }
 
-.file-item:last-child {
-  border-bottom:none;
-}
-
-.file-label {
-  font-weight:bold;
-  color:var(--file-color);
-  font-size:0.9em;
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-
-.file-label::before {
-  content:"📄";
-  font-size:0.9em;
-}
-
-.file-info {
-  color:#aaa;
-  font-size:0.8em;
-  text-align:right;
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-}
-
-.file-date {
-  font-family:'Courier Prime',monospace;
-}
-
-.file-size {
-  color:#777;
-  font-size:0.75em;
-}
+.file-info { color:#aaa; font-size:0.8em; text-align:right; display:flex; flex-direction:column; gap:2px; }
+.file-date { font-family:'Courier Prime',monospace; }
+.file-size { color:#777; font-size:0.75em; }
 </style>
 </head>
 
@@ -734,7 +587,7 @@ input[type="file"] {
   
   <div class="console-container">
     <div class="console-header">
-      <div class="console-title">SISTEMA C.C.O - TERMINAL DE ACESSO</div>
+      <div class="console-title">SISTEMA C.C.O - TERMINAL ONLINE</div>
       <div class="console-time" id="console-time"></div>
     </div>
     <div class="console-content" id="console-content">
@@ -743,14 +596,14 @@ input[type="file"] {
   
   <div class="loading-bar-container">
     <div class="loading-bar-info">
-      <span>Inicializando Sistema C.C.O</span>
-      <span id="loading-stage">Verificando credenciais...</span>
+      <span>Conectando ao Banco de Dados Seguro</span>
+      <span id="loading-stage">Inicializando...</span>
     </div>
     <div class="loading-bar">
       <div class="loading-progress" id="loading-progress"></div>
       <div class="loading-percentage" id="loading-percentage">0%</div>
     </div>
-    <div class="loading-status" id="loading-status">Acessando banco de dados de entidades...</div>
+    <div class="loading-status" id="loading-status">Sincronizando dados criptografados...</div>
   </div>
 </div>
 
@@ -762,39 +615,44 @@ input[type="file"] {
 <div class="paper sidebar">
   <h1>CONSULTA DE ENTIDADES</h1>
   
+  <div class="connection-status">
+      <span class="status-indicator" id="statusIndicator"></span>
+      <span id="statusText">DESCONECTADO</span>
+  </div>
+  
   <div class="import-container">
-    <label>IMPORTAR / RECEBER ARQUIVO</label>
+    <label>ENVIAR ARQUIVO JSON (ONLINE)</label>
     <input type="file" id="jsonInput" accept="application/json">
+    <div style="font-size:0.7em; color:#666; margin-top:5px;">* Arquivos são enviados para o servidor global e visíveis a todos os agentes.</div>
   </div>
   
   <div class="search-container">
-    <label>PESQUISAR ANOMALIAS</label>
+    <label>PESQUISAR NA REDE</label>
     <div class="search-box">
       <input type="text" id="searchInput" placeholder="Nome, ID ou classe...">
       <button id="btnSearch">🔍</button>
     </div>
-    <div class="results-info" id="resultsInfo">Total: 0 anomalias</div>
+    <div class="results-info" id="resultsInfo">Sincronizando...</div>
   </div>
   
   <div class="anomaly-list-container">
-    <label>ANOMALIAS REGISTRADAS</label>
+    <label>REGISTROS GLOBAIS</label>
     <div class="anomaly-list" id="anomalyList">
       </div>
   </div>
   
   <div class="controls">
     <button id="btnClearSearch">LIMPAR BUSCA</button>
-    <button id="btnClearAll">LIMPAR TUDO</button>
-  </div>
+    </div>
   
   <div class="file-controls">
-    <button id="btnMarkFile">MARCAR COMO IMPORTANTE</button>
+    <button id="btnMarkFile">CRIAR ARQUIVO</button>
     <button id="btnViewFiles">VER ARQUIVOS</button>
   </div>
   
   <div class="warning">
-    ATENÇÃO: Terminal de consulta apenas.<br>
-    NÃO ENCARAR. NÃO RESPONDER.
+    ATENÇÃO: Terminal conectado à rede global.<br>
+    DADOS SÃO COMPARTILHADOS EM TEMPO REAL.
   </div>
 </div>
 
@@ -806,19 +664,18 @@ input[type="file"] {
   
   <div id="dossierContent">
     <div class="empty-state">
-      <h3>NENHUMA ANOMALIA SELECIONADA</h3>
-      <p>Selecione uma anomalia da lista para visualizar seu dossiê completo.</p>
-      <p>Ou importe um arquivo JSON recebido para adicionar novos registros.</p>
+      <h3>AGUARDANDO DADOS</h3>
+      <p>Selecione uma anomalia da lista para visualizar.</p>
+      <p>O sistema está sincronizando com a base de dados central.</p>
     </div>
   </div>
   
   <div id="filesSection" style="display:none; margin-top:30px;">
     <div class="file-section">
-      <h3>ARQUIVOS IMPORTANTES</h3>
+      <h3>ARQUIVOS ANEXADOS</h3>
       <div id="filesList">
         <div class="empty-state">
           <p>Nenhum arquivo importante registrado.</p>
-          <p>Use "MARCAR COMO IMPORTANTE" para destacar esta anomalia.</p>
         </div>
       </div>
     </div>
@@ -829,6 +686,45 @@ input[type="file"] {
 </div>
 
 <script>
+// =========================================================================
+// CONFIGURAÇÃO DO FIREBASE (BANCO DE DADOS EM NUVEM)
+// =========================================================================
+// Para que outros usuários vejam os arquivos, você deve criar um projeto no 
+// https://console.firebase.google.com/, criar um Realtime Database e colar
+// as configurações abaixo. Sem isso, os dados não serão compartilhados.
+// =========================================================================
+
+const firebaseConfig = {
+    // SUBSTITUA ESTES VALORES PELOS SEUS DO CONSOLE DO FIREBASE
+    apiKey: "SUA_API_KEY_AQUI",
+    authDomain: "SEU_PROJETO.firebaseapp.com",
+    databaseURL: "https://SEU_PROJETO-default-rtdb.firebaseio.com",
+    projectId: "SEU_PROJETO_ID",
+    storageBucket: "SEU_PROJETO.appspot.com",
+    messagingSenderId: "SEU_MESSAGING_ID",
+    appId: "SEU_APP_ID"
+};
+
+// Inicializar Firebase
+let app, db;
+try {
+    app = firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+} catch (e) {
+    console.error("Erro ao inicializar Firebase. Verifique a configuração.", e);
+}
+
+// =========================================================================
+// LÓGICA DO SISTEMA
+// =========================================================================
+
+// Variáveis Globais
+let globalAnomalies = [];
+let globalFiles = [];
+let currentAnomalyId = null;
+let currentSearchTerm = '';
+let viewingFiles = false;
+
 // FUNÇÕES DA TELA DE CARREGAMENTO
 function startLoadingScreen() {
   const consoleEl = document.getElementById('console-content');
@@ -838,48 +734,26 @@ function startLoadingScreen() {
   const stageEl = document.getElementById('loading-stage');
   const consoleTimeEl = document.getElementById('console-time');
   
-  // Atualizar hora no console
   function updateConsoleTime() {
     const now = new Date();
     const timeStr = now.toLocaleTimeString('pt-BR', {hour12: false});
-    const dateStr = now.toLocaleDateString('pt-BR');
-    consoleTimeEl.textContent = `${dateStr} ${timeStr}`;
+    consoleTimeEl.textContent = `${now.toLocaleDateString('pt-BR')} ${timeStr}`;
   }
   
   updateConsoleTime();
   setInterval(updateConsoleTime, 1000);
   
-  // Mensagens do console
   const consoleMessages = [
-    {text: "> Inicializando Sistema C.C.O...", delay: 200, type: "prompt"},
-    {text: "> Verificando credenciais de acesso...", delay: 400, type: "system"},
-    {text: "[OK] Credenciais confirmadas - Nível de segurança 5", delay: 600, type: "success"},
-    {text: "[OK] Protocolos de contenção ativos", delay: 800, type: "success"},
-    {text: "> Carregando módulos de segurança C.C.O...", delay: 1000, type: "prompt"},
-    {text: "[SCAN] Verificando integridade do banco de dados...", delay: 1200, type: "system"},
-    {text: "[OK] Arquivos de anomalias íntegros", delay: 1400, type: "success"},
-    {text: "> Conectando ao servidor seguro C.C.O...", delay: 1600, type: "prompt"},
-    {text: "[WARNING] Conexão segura estabelecida", delay: 1800, type: "warning"},
-    {text: "> Sistema C.C.O pronto para consulta", delay: 2000, type: "prompt"},
-    {text: "> Acessando terminal de consulta...", delay: 2200, type: "prompt"}
-  ];
-  
-  // Estágios do carregamento
-  const loadingStages = [
-    {stage: "Verificando credenciais...", progress: 10},
-    {stage: "Carregando módulos C.C.O...", progress: 25},
-    {stage: "Acessando banco de dados...", progress: 40},
-    {stage: "Inicializando interface...", progress: 60},
-    {stage: "Estabelecendo conexão...", progress: 75},
-    {stage: "Finalizando inicialização...", progress: 90},
-    {stage: "Sistema C.C.O pronto", progress: 100}
+    {text: "> Inicializando Link de Satélite...", delay: 200, type: "prompt"},
+    {text: "> Conectando ao Firebase Relay...", delay: 400, type: "system"},
+    {text: "[OK] Handshake criptografado estabelecido", delay: 800, type: "success"},
+    {text: "> Baixando manifesto de anomalias...", delay: 1000, type: "prompt"},
+    {text: "[SYNC] Recebendo pacotes de dados globais...", delay: 1200, type: "warning"},
+    {text: "> Sistema pronto. Monitoramento ativo.", delay: 2000, type: "success"}
   ];
   
   let currentMessage = 0;
-  let currentStage = 0;
-  let progress = 0;
   
-  // Adicionar mensagens ao console
   function addConsoleMessage() {
     if (currentMessage < consoleMessages.length) {
       const msg = consoleMessages[currentMessage];
@@ -893,811 +767,304 @@ function startLoadingScreen() {
     }
   }
   
-  // Atualizar barra de progresso
-  function updateProgress() {
-    if (currentStage < loadingStages.length) {
-      const stage = loadingStages[currentStage];
-      progress = stage.progress;
-      progressBar.style.width = `${progress}%`;
-      percentageEl.textContent = `${progress}%`;
-      stageEl.textContent = stage.stage;
-      statusEl.textContent = stage.stage;
-      currentStage++;
-      
-      if (currentStage < loadingStages.length) {
-        const nextDelay = loadingStages[currentStage].progress - loadingStages[currentStage-1].progress;
-        setTimeout(updateProgress, nextDelay * 20);
-      } else {
-        // Finalizar carregamento
+  let progress = 0;
+  const interval = setInterval(() => {
+    progress += Math.random() * 5;
+    if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
         setTimeout(() => {
-          const loadingScreen = document.getElementById('loading-screen');
-          loadingScreen.style.opacity = '0';
-          loadingScreen.style.transition = 'opacity 0.8s ease';
-          
-          setTimeout(() => {
-            loadingScreen.style.display = 'none';
-            document.body.style.opacity = '1';
-            // Inicializar sistema principal
-            initializeMainSystem();
-          }, 800);
+            const loadingScreen = document.getElementById('loading-screen');
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => { 
+                loadingScreen.style.display = 'none'; 
+                document.body.style.opacity = '1';
+                initializeMainSystem();
+            }, 800);
         }, 500);
-      }
     }
-  }
+    progressBar.style.width = `${progress}%`;
+    percentageEl.textContent = `${Math.floor(progress)}%`;
+  }, 100);
   
-  // Iniciar sequência de carregamento
-  setTimeout(() => {
-    addConsoleMessage();
-    updateProgress();
-  }, 500);
+  setTimeout(addConsoleMessage, 500);
 }
 
-// INICIALIZAÇÃO DO SISTEMA PRINCIPAL
 function initializeMainSystem() {
-  // Inicializar variáveis globais
-  let saved = JSON.parse(localStorage.getItem('analog_entities') || '[]');
-  let importantFiles = JSON.parse(localStorage.getItem('analog_files') || '[]');
-  const glitchOverlay = document.querySelector('.glitch-overlay');
-  let glitchInterval;
-  let currentAnomalyIndex = -1;
-  let currentSearchTerm = '';
-  let viewingFiles = false;
+    const statusIndicator = document.getElementById('statusIndicator');
+    const statusText = document.getElementById('statusText');
+    const el = id => document.getElementById(id);
 
-  const el = id => document.getElementById(id);
-
-  // Carregar anomalias salvas
-  function loadAnomalies(searchTerm = '') {
-    const anomalyList = el('anomalyList');
-    currentSearchTerm = searchTerm;
-    
-    // Filtrar anomalias se houver termo de busca
-    let filteredAnomalies = saved;
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase().trim();
-      filteredAnomalies = saved.filter(anomaly => 
-        (anomaly.id && anomaly.id.toLowerCase().includes(term)) ||
-        (anomaly.threat && anomaly.threat.toLowerCase().includes(term)) ||
-        (anomaly.visual && anomaly.visual.toLowerCase().includes(term)) ||
-        (anomaly.behavior && anomaly.behavior.toLowerCase().includes(term)) ||
-        (anomaly.severity && anomaly.severity.toLowerCase().includes(term))
-      );
-    }
-    
-    // Atualizar contador
-    el('resultsInfo').textContent = searchTerm.trim() 
-      ? `Resultados: ${filteredAnomalies.length} de ${saved.length}` 
-      : `Total: ${saved.length} anomalias`;
-    
-    anomalyList.innerHTML = '';
-    
-    if (filteredAnomalies.length === 0) {
-      const emptyItem = document.createElement('div');
-      emptyItem.className = 'anomaly-item';
-      emptyItem.innerHTML = searchTerm.trim() 
-        ? '<div class="anomaly-id">NENHUM RESULTADO</div><div class="anomaly-threat">Tente outros termos</div>'
-        : '<div class="anomaly-id">NENHUMA ANOMALIA</div><div class="anomaly-threat">Importe um arquivo JSON</div>';
-      anomalyList.appendChild(emptyItem);
-      return;
-    }
-    
-    filteredAnomalies.forEach((anomaly, index) => {
-      // Encontrar o índice original no array salvo
-      const originalIndex = saved.findIndex(a => a.id === anomaly.id);
-      
-      const item = document.createElement('div');
-      item.className = 'anomaly-item';
-      if (originalIndex === currentAnomalyIndex) {
-        item.classList.add('active');
-      }
-      
-      // Formatar data se existir
-      let dateInfo = '';
-      if (anomaly.date) {
-        const date = new Date(anomaly.date);
-        dateInfo = ` | ${date.toLocaleDateString('pt-BR')}`;
-      }
-      
-      item.innerHTML = `
-        <div class="anomaly-id">${anomaly.id || 'SEM_ID'}</div>
-        <div class="anomaly-threat">${anomaly.threat || 'NÃO CLASSIFICADA'}${dateInfo}</div>
-      `;
-      
-      item.addEventListener('click', () => {
-        // Remove classe ativa de todos os itens
-        document.querySelectorAll('.anomaly-item').forEach(i => i.classList.remove('active'));
-        // Adiciona classe ativa ao item clicado
-        item.classList.add('active');
-        // Carrega a anomalia
-        loadAnomaly(originalIndex);
-        // Se estava visualizando arquivos, atualiza
-        if (viewingFiles) {
-          loadFilesForAnomaly(anomaly.id);
-        }
-      });
-      
-      anomalyList.appendChild(item);
-    });
-  }
-
-  // Carregar uma anomalia específica
-  function loadAnomaly(index) {
-    if (index < 0 || index >= saved.length) return;
-    
-    const anomaly = saved[index];
-    currentAnomalyIndex = index;
-    
-    // Criar conteúdo do dossiê
-    const dossierContent = document.createElement('div');
-    
-    // Adicionar imagem se existir
-    if (anomaly.image) {
-      const img = document.createElement('img');
-      img.id = 'pImage';
-      img.src = anomaly.image;
-      img.style.display = 'block';
-      img.style.marginBottom = '20px';
-      img.style.maxHeight = '250px';
-      img.style.objectFit = 'contain';
-      dossierContent.appendChild(img);
-    }
-    
-    // Informações básicas
-    const infoSection = document.createElement('div');
-    infoSection.className = 'dossier-section';
-    infoSection.innerHTML = `
-      <p><strong>ID:</strong> ${anomaly.id || '---'}</p>
-      <p><strong>AMEAÇA:</strong> <span class="glitch">${anomaly.threat || '---'}</span></p>
-      <p><strong>ESTADO:</strong> ${getSeverityText(anomaly.severity)}</p>
-      <p><strong>DATA DE REGISTRO:</strong> ${anomaly.date ? new Date(anomaly.date).toLocaleString('pt-BR') : '---'}</p>
-    `;
-    dossierContent.appendChild(infoSection);
-    
-    // Relato visual
-    if (anomaly.visual) {
-      const visualSection = document.createElement('div');
-      visualSection.className = 'dossier-section';
-      visualSection.innerHTML = `<h3>RELATO VISUAL</h3><p>${anomaly.visual}</p>`;
-      dossierContent.appendChild(visualSection);
-    }
-    
-    // Comportamento
-    if (anomaly.behavior) {
-      const behaviorSection = document.createElement('div');
-      behaviorSection.className = 'dossier-section';
-      behaviorSection.innerHTML = `<h3>COMPORTAMENTO</h3><p>${anomaly.behavior}</p>`;
-      dossierContent.appendChild(behaviorSection);
-    }
-    
-    // Efeitos (converter binário para texto)
-    if (anomaly.effects) {
-      const effectsSection = document.createElement('div');
-      effectsSection.className = 'dossier-section';
-      const effectsText = convertBinaryToText(anomaly.effects) || anomaly.effects;
-      effectsSection.innerHTML = `<h3>EFEITOS</h3><p>${effectsText}</p>`;
-      dossierContent.appendChild(effectsSection);
-    }
-    
-    // Contenção
-    if (anomaly.containment) {
-      const containSection = document.createElement('div');
-      containSection.className = 'dossier-section';
-      containSection.innerHTML = `<h3>CONTENÇÃO</h3><p>${anomaly.containment}</p>`;
-      dossierContent.appendChild(containSection);
-    }
-    
-    // Substituir conteúdo do dossiê
-    el('dossierContent').innerHTML = '';
-    el('dossierContent').appendChild(dossierContent);
-    
-    // Aplicar efeitos visuais baseados na severidade
-    applySeverityEffects(anomaly.severity);
-    
-    // Se estava visualizando arquivos, mantém a seção visível
-    if (viewingFiles) {
-      loadFilesForAnomaly(anomaly.id);
-      el('filesSection').style.display = 'block';
-    } else {
-      el('filesSection').style.display = 'none';
-    }
-  }
-
-  // Converter binário para texto
-  function convertBinaryToText(binary) {
-    try {
-      // Remove espaços e quebras de linha
-      const binaryString = binary.replace(/\s+/g, '');
-      if (!binaryString.match(/^[01]+$/)) {
-        return binary; // Retorna original se não for binário válido
-      }
-      
-      // Converte cada 8 bits para caractere
-      let text = '';
-      for (let i = 0; i < binaryString.length; i += 8) {
-        const byte = binaryString.substr(i, 8);
-        if (byte.length === 8) {
-          text += String.fromCharCode(parseInt(byte, 2));
-        }
-      }
-      return text;
-    } catch (e) {
-      return binary; // Retorna original em caso de erro
-    }
-  }
-
-  // Obter texto da severidade
-  function getSeverityText(severity) {
-    if (!severity) return '---';
-    const severityMap = {
-      'irreversivel': 'Irreversível',
-      'fatal': 'Fatal',
-      'biologico': 'Biologicamente destrutivo',
-      'biologico': 'Biologicamente destrutivo'
-    };
-    return severityMap[severity] || severity;
-  }
-
-  // Aplicar efeitos de severidade
-  function applySeverityEffects(severity) {
-    // Remove todas as classes de efeito
-    document.body.classList.remove('tremor-1', 'tremor-2', 'bio', 'glitch-active');
-    
-    // Limpa intervalo de glitch anterior
-    if (glitchInterval) {
-      clearInterval(glitchInterval);
-    }
-    
-    // Aplica efeitos baseados na severidade
-    if (severity === 'irreversivel') {
-      document.body.classList.add('tremor-1');
-      // Efeito de glitch ocasional
-      glitchInterval = setInterval(() => {
-        if (Math.random() > 0.7) {
-          document.body.classList.add('glitch-active');
-          setTimeout(() => {
-            document.body.classList.remove('glitch-active');
-          }, 200);
-        }
-      }, 1000);
-    }
-    
-    if (severity === 'fatal') {
-      document.body.classList.add('tremor-2');
-      // Efeito de glitch mais frequente
-      glitchInterval = setInterval(() => {
-        if (Math.random() > 0.5) {
-          document.body.classList.add('glitch-active');
-          setTimeout(() => {
-            document.body.classList.remove('glitch-active');
-          }, 300);
-        }
-      }, 800);
-    }
-    
-    if (severity === 'biologico') {
-      document.body.classList.add('bio');
-      // Efeito de glitch constante e intenso
-      document.body.classList.add('glitch-active');
-      glitchInterval = setInterval(() => {
-        // Piscadas aleatórias mais intensas
-        if (Math.random() > 0.8) {
-          glitchOverlay.style.opacity = '0.6';
-          setTimeout(() => {
-            glitchOverlay.style.opacity = '0.3';
-          }, 50);
-        }
-      }, 100);
-    }
-  }
-
-  // Carregar arquivos para uma anomalia
-  function loadFilesForAnomaly(anomalyId) {
-    const filesList = el('filesList');
-    const anomalyFiles = importantFiles.filter(f => f.anomalyId === anomalyId);
-    
-    if (anomalyFiles.length === 0) {
-      filesList.innerHTML = `
-        <div class="empty-state">
-          <p>Nenhum arquivo importante registrado.</p>
-          <p>Use "MARCAR COMO IMPORTANTE" para destacar esta anomalia.</p>
-        </div>
-      `;
-      return;
-    }
-    
-    filesList.innerHTML = '';
-    
-    // Ordenar por data (mais recente primeiro)
-    anomalyFiles.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    anomalyFiles.forEach((file, index) => {
-      const fileItem = document.createElement('div');
-      fileItem.className = 'file-item';
-      
-      const date = new Date(file.date);
-      const dateStr = date.toLocaleDateString('pt-BR');
-      const timeStr = date.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-      
-      // Calcular "tamanho" baseado no conteúdo
-      const size = file.notes ? Math.ceil(file.notes.length / 100) : 1;
-      const sizeLabel = size === 1 ? '1KB' : `${size}KB`;
-      
-      fileItem.innerHTML = `
-        <div class="file-label">${file.label || `Arquivo ${index + 1}`}</div>
-        <div class="file-info">
-          <div class="file-date">${dateStr} ${timeStr}</div>
-          <div class="file-size">${sizeLabel}</div>
-        </div>
-      `;
-      
-      fileItem.addEventListener('click', () => {
-        viewFileDetails(file);
-      });
-      
-      filesList.appendChild(fileItem);
-    });
-    
-    // Adicionar botão para limpar arquivos desta anomalia
-    const clearBtn = document.createElement('button');
-    clearBtn.textContent = 'LIMPAR ARQUIVOS DESTA ANOMALIA';
-    clearBtn.style.cssText = `
-      margin-top:15px;
-      width:100%;
-      padding:8px;
-      background:rgba(179, 0, 0, 0.1);
-      border:1px solid #b30000;
-      color:#ff6666;
-      font-family:'Courier Prime',monospace;
-      cursor:pointer;
-    `;
-    
-    clearBtn.addEventListener('click', () => {
-      if (confirm(`Remover todos os ${anomalyFiles.length} arquivo(s) importantes registrados para esta anomalia?`)) {
-        importantFiles = importantFiles.filter(f => f.anomalyId !== anomalyId);
-        localStorage.setItem('analog_files', JSON.stringify(importantFiles));
-        loadFilesForAnomaly(anomalyId);
-        loadAnomalies(currentSearchTerm);
-        showNotification('Arquivos removidos com sucesso.');
-      }
-    });
-    
-    filesList.appendChild(clearBtn);
-  }
-
-  // Visualizar detalhes de um arquivo
-  function viewFileDetails(file) {
-    const anomaly = saved.find(a => a.id === file.anomalyId);
-    if (!anomaly) return;
-    
-    let details = `ARQUIVO IMPORTANTE\n`;
-    details += `===================\n`;
-    details += `Anomalia: ${anomaly.id}\n`;
-    details += `\n`;
-    details += `CONTEÚDO DO ARQUIVO:\n`;
-    details += `--------------------\n`;
-    
-    if (file.notes) {
-      details += file.notes;
-    } else {
-      details += `Arquivo marcado como importante.\n\n`;
-      details += `DADOS DA ANOMALIA:\n`;
-      details += `• Ameaça: ${anomaly.threat || 'Não especificada'}\n`;
-      details += `• Classificação: ${getSeverityText(anomaly.severity)}\n`;
-      if (anomaly.visual) details += `• ${anomaly.visual.substring(0, 100)}${anomaly.visual.length > 100 ? '...' : ''}\n`;
-      if (anomaly.behavior) details += `• ${anomaly.behavior.substring(0, 100)}${anomaly.behavior.length > 100 ? '...' : ''}\n`;
-    }
-    
-    const modal = document.createElement('div');
-    modal.style.cssText = `
-      position:fixed;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
-      background:rgba(0,0,0,0.8);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      z-index:10000;
-    `;
-    
-    const modalContent = document.createElement('div');
-    modalContent.style.cssText = `
-      background:#141414;
-      border:1px solid var(--file-color);
-      padding:20px;
-      max-width:500px;
-      width:90%;
-      max-height:80vh;
-      overflow-y:auto;
-      font-family:'Courier Prime',monospace;
-      white-space:pre-wrap;
-      color:#e8e8e8;
-      box-shadow:0 0 20px rgba(0,153,255,0.3);
-    `;
-    
-    modalContent.innerHTML = `
-      <div style="color:var(--file-color); font-family:'VT323',monospace; font-size:1.2em; margin-bottom:10px; border-bottom:1px solid var(--file-color); padding-bottom:5px;">
-        📁 ARQUIVO IMPORTANTE
-      </div>
-      <div style="font-size:0.9em; line-height:1.6; margin-bottom:15px;">${details}</div>
-      <div style="margin-top:20px; display:flex; gap:10px;">
-        <button id="modalClose" style="flex:1; padding:8px; background:#333; border:1px solid #444; color:#e8e8e8; cursor:pointer; font-family:'Courier Prime',monospace;">
-          FECHAR
-        </button>
-        <button id="modalDelete" style="flex:1; padding:8px; background:rgba(179,0,0,0.2); border:1px solid #b30000; color:#ff6666; cursor:pointer; font-family:'Courier Prime',monospace;">
-          REMOVER ARQUIVO
-        </button>
-      </div>
-    `;
-    
-    modal.appendChild(modalContent);
-    document.body.appendChild(modal);
-    
-    el('modalClose').addEventListener('click', () => {
-      document.body.removeChild(modal);
-    });
-    
-    el('modalDelete').addEventListener('click', () => {
-      if (confirm('Remover este arquivo permanentemente?')) {
-        importantFiles = importantFiles.filter(f => f.id !== file.id);
-        localStorage.setItem('analog_files', JSON.stringify(importantFiles));
-        document.body.removeChild(modal);
-        loadFilesForAnomaly(file.anomalyId);
-        loadAnomalies(currentSearchTerm);
-        showNotification('Arquivo removido.');
-      }
-    });
-    
-    // Fechar ao clicar fora
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        document.body.removeChild(modal);
-      }
-    });
-  }
-
-  // Marcar uma anomalia como arquivo importante
-  el('btnMarkFile').addEventListener('click', () => {
-    if (currentAnomalyIndex < 0 || currentAnomalyIndex >= saved.length) {
-      showNotification('Selecione uma anomalia primeiro.');
-      return;
-    }
-    
-    const anomaly = saved[currentAnomalyIndex];
-    
-    // Verificar se já existe arquivo para esta anomalia
-    const existingFile = importantFiles.find(f => f.anomalyId === anomaly.id);
-    if (existingFile) {
-      if (!confirm(`Já existe um arquivo importante para "${anomaly.id}".\nDeseja atualizá-lo com novas informações?`)) {
-        return;
-      }
-    }
-    
-    // Perguntar se quer adicionar notas personalizadas
-    const addNotes = confirm(`Criar arquivo importante para "${anomaly.id}"\n\nDeseja adicionar anotações ao arquivo? (Cancelar para usar dados padrão)`);
-    
-    let notes = '';
-    let label = `Arquivo - ${anomaly.id}`;
-    
-    if (addNotes) {
-      notes = prompt('Digite suas anotações para este arquivo importante:', '');
-      if (notes === null) return; // Usuário cancelou
-      
-      const customLabel = prompt('Título do arquivo (opcional):', label);
-      if (customLabel !== null && customLabel.trim() !== '') {
-        label = customLabel.trim();
-      }
-    } else {
-      // Conteúdo padrão baseado nos dados da anomalia
-      notes = `ARQUIVO IMPORTANTE - CLASSIFICAÇÃO: ${getSeverityText(anomaly.severity)}\n`;
-      notes += `============================================\n\n`;
-      notes += `ANOMALIA: ${anomaly.id}\n`;
-      notes += `AMEAÇA: ${anomaly.threat || 'Não classificada'}\n`;
-      notes += `DATA DO REGISTRO: ${anomaly.date ? new Date(anomaly.date).toLocaleString('pt-BR') : 'Não registrada'}\n\n`;
-      
-      if (anomaly.visual) {
-        notes += `RELATO VISUAL:\n${anomaly.visual}\n\n`;
-      }
-      
-      if (anomaly.behavior) {
-        notes += `COMPORTAMENTO:\n${anomaly.behavior}\n\n`;
-      }
-      
-      if (anomaly.effects) {
-        notes += `EFEITOS DOCUMENTADOS:\n${anomaly.effects}\n\n`;
-      }
-    }
-    
-    const file = {
-      id: 'FILE_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-      anomalyId: anomaly.id,
-      date: new Date().toISOString(),
-      notes: notes,
-      label: label
-    };
-    
-    // Se já existe, substituir
-    if (existingFile) {
-      const index = importantFiles.findIndex(f => f.id === existingFile.id);
-      importantFiles[index] = file;
-    } else {
-      importantFiles.push(file);
-    }
-    
-    localStorage.setItem('analog_files', JSON.stringify(importantFiles));
-    
-    // Atualizar interface
-    loadAnomalies(currentSearchTerm);
-    if (viewingFiles) {
-      loadFilesForAnomaly(anomaly.id);
-    }
-    
-    showNotification(`Arquivo importante criado para "${anomaly.id}"`);
-  });
-
-  // Alternar visualização de arquivos
-  el('btnViewFiles').addEventListener('click', () => {
-    viewingFiles = !viewingFiles;
-    
-    if (viewingFiles) {
-      if (currentAnomalyIndex < 0 || currentAnomalyIndex >= saved.length) {
-        showNotification('Selecione uma anomalia primeiro.');
-        viewingFiles = false;
-        return;
-      }
-      
-      const anomaly = saved[currentAnomalyIndex];
-      el('btnViewFiles').textContent = 'OCULTAR ARQUIVOS';
-      el('btnViewFiles').style.background = 'rgba(0, 153, 255, 0.2)';
-      el('filesSection').style.display = 'block';
-      loadFilesForAnomaly(anomaly.id);
-    } else {
-      el('btnViewFiles').textContent = 'VER ARQUIVOS';
-      el('btnViewFiles').style.background = '';
-      el('filesSection').style.display = 'none';
-    }
-  });
-
-  // Importar arquivo JSON - SISTEMA COMPATÍVEL COM ESTRUTURA COMPLETA
-  el('jsonInput').addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = ev => {
-      try {
-        const jsonData = JSON.parse(ev.target.result);
-        
-        let anomalyData = null;
-        let filesToImport = [];
-        
-        // --- LÓGICA DE DETECÇÃO DE FORMATO ATUALIZADA ---
-        // Verifica se é o formato "COMPLETO" { anomaly: {...}, importantFiles: [...] }
-        if (jsonData.anomaly) {
-          anomalyData = jsonData.anomaly;
-          // Se houver arquivos importantes no JSON, pegamos também
-          if (jsonData.importantFiles && Array.isArray(jsonData.importantFiles)) {
-            filesToImport = jsonData.importantFiles;
-          }
-        } 
-        // Fallback: formato antigo (apenas a anomalia direta)
-        else if (jsonData.id) {
-          anomalyData = jsonData;
-        } 
-        
-        if (!anomalyData) {
-          throw new Error('Formato JSON não reconhecido. Certifique-se de que é um arquivo válido da C.C.O.');
-        }
-
-        // 1. Processar a Anomalia Principal
-        // Garantir ID
-        if (!anomalyData.id) {
-          anomalyData.id = `ANOMALY_${Date.now()}`;
-        }
-        
-        // Verificar se já existe (Atualizar ou Inserir)
-        const existingIndex = saved.findIndex(a => a.id === anomalyData.id);
-        if (existingIndex !== -1) {
-          // Atualiza silenciosamente ou pede confirmação (comentado para fluxo direto)
-          // if (confirm(`Anomalia "${anomalyData.id}" já existe. Atualizar dados?`)) { 
-            saved[existingIndex] = anomalyData;
-          // }
-        } else {
-          saved.push(anomalyData);
-        }
-        
-        // 2. Processar Arquivos Importantes (Anexos) do JSON
-        if (filesToImport.length > 0) {
-          filesToImport.forEach(newFile => {
-            // Verifica se este arquivo específico já existe pelo ID do arquivo
-            const fIdx = importantFiles.findIndex(f => f.id === newFile.id);
-            if (fIdx !== -1) {
-              importantFiles[fIdx] = newFile; // Atualiza
+    // 1. OUVINTES DO BANCO DE DADOS (REALTIME)
+    if (db) {
+        const connectedRef = db.ref(".info/connected");
+        connectedRef.on("value", (snap) => {
+            if (snap.val() === true) {
+                statusIndicator.classList.add('online');
+                statusIndicator.classList.remove('offline');
+                statusText.textContent = "CONECTADO AO SERVIDOR";
+                statusText.style.color = "#00cc66";
             } else {
-              importantFiles.push(newFile); // Adiciona novo
+                statusIndicator.classList.remove('online');
+                statusIndicator.classList.add('offline');
+                statusText.textContent = "OFFLINE (MODO LOCAL)";
+                statusText.style.color = "#ff3333";
             }
-          });
-        }
-        
-        // 3. Salvar tudo no localStorage
-        localStorage.setItem('analog_entities', JSON.stringify(saved));
-        localStorage.setItem('analog_files', JSON.stringify(importantFiles));
-        
-        // 4. Atualizar UI
-        el('jsonInput').value = ''; // Limpar input
-        loadAnomalies(currentSearchTerm);
-        
-        // Selecionar a anomalia recém importada
-        const newIndex = saved.findIndex(a => a.id === anomalyData.id);
-        if (newIndex !== -1) loadAnomaly(newIndex);
-        
-        // Feedback
-        const msgFiles = filesToImport.length > 0 ? ` e ${filesToImport.length} arquivos anexados` : '';
-        showNotification(`Dossiê "${anomalyData.id}" importado com sucesso${msgFiles}.`);
-        
-      } catch (error) {
-        console.error(error);
-        alert('ERRO CRÍTICO DE IMPORTAÇÃO: ' + error.message);
-      }
-    };
-    reader.readAsText(file);
-  });
+        });
 
-  // Pesquisar anomalias
-  el('btnSearch').addEventListener('click', () => {
-    const searchTerm = el('searchInput').value;
-    loadAnomalies(searchTerm);
-    
-    // Se houver resultados, selecionar o primeiro
-    const filteredAnomalies = saved.filter(anomaly => 
-      searchTerm.trim() && (
-        (anomaly.id && anomaly.id.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (anomaly.threat && anomaly.threat.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (anomaly.visual && anomaly.visual.toLowerCase().includes(searchTerm.toLowerCase()))
-      )
-    );
-    
-    if (filteredAnomalies.length > 0) {
-      const firstAnomaly = filteredAnomalies[0];
-      const originalIndex = saved.findIndex(a => a.id === firstAnomaly.id);
-      loadAnomaly(originalIndex);
-    } else if (searchTerm.trim()) {
-      // Se não encontrou nada, limpar o dossiê
-      clearDossier();
-    }
-  });
+        // Carregar Anomalias
+        db.ref('anomalies').on('value', (snapshot) => {
+            const data = snapshot.val();
+            globalAnomalies = data ? Object.values(data) : [];
+            refreshAnomalyList();
+            // Se a anomalia atual foi atualizada, recarregar
+            if (currentAnomalyId) {
+                const updated = globalAnomalies.find(a => a.id === currentAnomalyId);
+                if (updated) loadAnomalyDetails(updated);
+            }
+        });
 
-  el('searchInput').addEventListener('keypress', e => {
-    if (e.key === 'Enter') {
-      el('btnSearch').click();
-    }
-  });
-
-  // Limpar busca
-  el('btnClearSearch').addEventListener('click', () => {
-    el('searchInput').value = '';
-    loadAnomalies('');
-    if (saved.length > 0) {
-      loadAnomaly(0);
+        // Carregar Arquivos
+        db.ref('files').on('value', (snapshot) => {
+            const data = snapshot.val();
+            globalFiles = data ? Object.values(data) : [];
+            if (viewingFiles && currentAnomalyId) {
+                loadFilesForAnomaly(currentAnomalyId);
+            }
+        });
     } else {
-      clearDossier();
+        alert("ERRO: Configuração do Firebase ausente. O site funcionará, mas os dados não serão salvos na nuvem. Edite o código e adicione sua 'firebaseConfig'.");
     }
-  });
 
-  // Limpar todos os registros
-  el('btnClearAll').addEventListener('click', () => {
-    if (saved.length === 0 && importantFiles.length === 0) {
-      showNotification('Nenhum registro para limpar.');
-      return;
+    // 2. FUNÇÕES DE INTERFACE
+
+    function refreshAnomalyList() {
+        const listEl = el('anomalyList');
+        const term = currentSearchTerm.toLowerCase().trim();
+        
+        // Filtro
+        const filtered = globalAnomalies.filter(a => 
+            !term || 
+            (a.id && a.id.toLowerCase().includes(term)) ||
+            (a.threat && a.threat.toLowerCase().includes(term)) ||
+            (a.visual && a.visual.toLowerCase().includes(term))
+        );
+
+        el('resultsInfo').textContent = `Rede Global: ${filtered.length} registros`;
+        listEl.innerHTML = '';
+
+        if (filtered.length === 0) {
+            listEl.innerHTML = '<div class="anomaly-item"><div class="anomaly-id">SEM REGISTROS</div></div>';
+            return;
+        }
+
+        filtered.forEach(anomaly => {
+            const item = document.createElement('div');
+            item.className = 'anomaly-item';
+            if (anomaly.id === currentAnomalyId) item.classList.add('active');
+            
+            item.innerHTML = `
+                <div class="anomaly-id">${anomaly.id}</div>
+                <div class="anomaly-threat">${anomaly.threat || 'DESCONHECIDA'}</div>
+            `;
+            
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.anomaly-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                currentAnomalyId = anomaly.id;
+                loadAnomalyDetails(anomaly);
+                if (viewingFiles) loadFilesForAnomaly(anomaly.id);
+            });
+            listEl.appendChild(item);
+        });
     }
-    
-    if (confirm('⚠️ ATENÇÃO: Esta ação irá apagar TODOS os registros de anomalias e ARQUIVOS. Esta ação é irreversível. Continuar?')) {
-      localStorage.removeItem('analog_entities');
-      localStorage.removeItem('analog_files');
-      saved = [];
-      importantFiles = [];
-      loadAnomalies('');
-      clearDossier();
-      showNotification('Todos os registros foram apagados.');
+
+    function loadAnomalyDetails(anomaly) {
+        const content = el('dossierContent');
+        const img = el('pImage');
+        
+        // Imagem
+        if (anomaly.image) {
+            img.src = anomaly.image;
+            img.style.display = 'block';
+        } else {
+            img.style.display = 'none';
+        }
+
+        content.innerHTML = `
+            <div class="dossier-section">
+                <p><strong>ID:</strong> ${anomaly.id}</p>
+                <p><strong>AMEAÇA:</strong> <span class="glitch">${anomaly.threat}</span></p>
+                <p><strong>GRAVIDADE:</strong> ${anomaly.severity || '---'}</p>
+            </div>
+            ${anomaly.visual ? `<div class="dossier-section"><h3>DESCRIÇÃO VISUAL</h3><p>${anomaly.visual}</p></div>` : ''}
+            ${anomaly.behavior ? `<div class="dossier-section"><h3>COMPORTAMENTO</h3><p>${anomaly.behavior}</p></div>` : ''}
+            ${anomaly.effects ? `<div class="dossier-section"><h3>EFEITOS</h3><p>${anomaly.effects}</p></div>` : ''}
+            ${anomaly.containment ? `<div class="dossier-section"><h3>PROCEDIMENTOS DE CONTENÇÃO</h3><p>${anomaly.containment}</p></div>` : ''}
+        `;
+
+        // Efeitos visuais baseados na severidade
+        applySeverityEffects(anomaly.severity);
     }
-  });
 
-  // Limpar visualização do dossiê
-  function clearDossier() {
-    el('dossierContent').innerHTML = `
-      <div class="empty-state">
-        <h3>NENHUMA ANOMALIA SELECIONADA</h3>
-        <p>Selecione uma anomalia da lista para visualizar seu dossiê completo.</p>
-        <p>Ou importe um arquivo JSON para adicionar novos registros.</p>
-      </div>
-    `;
-    currentAnomalyIndex = -1;
-    
-    // Remover efeitos
-    document.body.classList.remove('tremor-1', 'tremor-2', 'bio', 'glitch-active');
-    if (glitchInterval) {
-      clearInterval(glitchInterval);
+    function loadFilesForAnomaly(id) {
+        const list = el('filesList');
+        const files = globalFiles.filter(f => f.anomalyId === id);
+        
+        list.innerHTML = '';
+        if (files.length === 0) {
+            list.innerHTML = '<div class="empty-state"><p>Nenhum arquivo anexado.</p></div>';
+            return;
+        }
+
+        files.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        files.forEach(file => {
+            const div = document.createElement('div');
+            div.className = 'file-item';
+            const dateStr = file.date ? new Date(file.date).toLocaleDateString() : 'Unknown';
+            
+            div.innerHTML = `
+                <div class="file-label">${file.label || 'Arquivo Confidencial'}</div>
+                <div class="file-info">
+                    <div class="file-date">${dateStr}</div>
+                </div>
+            `;
+            
+            div.addEventListener('click', () => showFileModal(file));
+            list.appendChild(div);
+        });
     }
-    
-    // Ocultar seção de arquivos
-    el('filesSection').style.display = 'none';
-    viewingFiles = false;
-    el('btnViewFiles').textContent = 'VER ARQUIVOS';
-    el('btnViewFiles').style.background = '';
-  }
 
-  // Mostrar notificação
-  function showNotification(message) {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-      position:fixed;
-      top:20px;
-      right:20px;
-      background:#141414;
-      border:1px solid #333;
-      padding:10px 15px;
-      color:#e8e8e8;
-      font-family:'Courier Prime',monospace;
-      font-size:0.9em;
-      z-index:10000;
-      box-shadow:0 0 10px rgba(0,0,0,0.5);
-      border-left:3px solid var(--glitch);
-      animation:slideIn 0.3s ease-out;
-    `;
-    
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-      }
-      @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-      }
-    `;
-    document.head.appendChild(style);
-    
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-      notification.style.animation = 'slideOut 0.3s ease-out';
-      setTimeout(() => {
-        document.body.removeChild(notification);
-        document.head.removeChild(style);
-      }, 300);
-    }, 3000);
-  }
-
-  // Efeito de glitch aleatório leve
-  setInterval(() => {
-    if (!document.body.classList.contains('bio') && 
-        !document.body.classList.contains('tremor-1') && 
-        !document.body.classList.contains('tremor-2') && 
-        Math.random() > 0.9) {
-      document.body.classList.add('glitch-active');
-      setTimeout(() => {
-        document.body.classList.remove('glitch-active');
-      }, 100);
+    function showFileModal(file) {
+        const modal = document.createElement('div');
+        modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:10000;";
+        
+        const box = document.createElement('div');
+        box.style.cssText = "background:#111;border:1px solid #0099ff;padding:20px;width:90%;max-width:600px;max-height:80vh;overflow-y:auto;color:#e8e8e8;";
+        
+        box.innerHTML = `
+            <h3 style="color:#0099ff;border-bottom:1px solid #0099ff;padding-bottom:10px;">${file.label}</h3>
+            <pre style="white-space:pre-wrap;font-family:'Courier Prime',monospace;">${file.notes || 'Sem conteúdo.'}</pre>
+            <button id="closeModal" style="margin-top:20px;width:100%;">FECHAR ARQUIVO</button>
+        `;
+        
+        modal.appendChild(box);
+        document.body.appendChild(modal);
+        
+        document.getElementById('closeModal').onclick = () => document.body.removeChild(modal);
     }
-  }, 3000);
 
-  // Inicializar sistema principal
-  loadAnomalies('');
-  if (saved.length > 0) {
-    loadAnomaly(0);
-  }
+    function applySeverityEffects(severity) {
+        document.body.classList.remove('tremor-1', 'tremor-2', 'bio', 'glitch-active');
+        if (!severity) return;
+        
+        const s = severity.toLowerCase();
+        if (s.includes('fatal')) document.body.classList.add('tremor-2');
+        if (s.includes('biologico') || s.includes('biológico')) document.body.classList.add('bio');
+        if (s.includes('irreversivel')) document.body.classList.add('tremor-1');
+    }
+
+    function showNotification(msg) {
+        const div = document.createElement('div');
+        div.textContent = msg;
+        div.style.cssText = "position:fixed;top:20px;right:20px;background:#111;border-left:4px solid #00ffcc;padding:15px;color:#fff;z-index:11000;box-shadow:0 0 10px #000;";
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 3000);
+    }
+
+    // 3. EVENT LISTENERS
+
+    // Pesquisa
+    el('btnSearch').addEventListener('click', () => {
+        currentSearchTerm = el('searchInput').value;
+        refreshAnomalyList();
+    });
+    
+    el('searchInput').addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') el('btnSearch').click();
+    });
+    
+    el('btnClearSearch').addEventListener('click', () => {
+        el('searchInput').value = '';
+        currentSearchTerm = '';
+        refreshAnomalyList();
+    });
+
+    // Toggle Arquivos
+    el('btnViewFiles').addEventListener('click', () => {
+        viewingFiles = !viewingFiles;
+        el('filesSection').style.display = viewingFiles ? 'block' : 'none';
+        el('btnViewFiles').textContent = viewingFiles ? 'OCULTAR ARQUIVOS' : 'VER ARQUIVOS';
+        if (viewingFiles && currentAnomalyId) loadFilesForAnomaly(currentAnomalyId);
+    });
+
+    // Criar Arquivo Manualmente
+    el('btnMarkFile').addEventListener('click', () => {
+        if (!currentAnomalyId) return alert("Selecione uma anomalia primeiro.");
+        const notes = prompt("Conteúdo do arquivo:");
+        if (!notes) return;
+        
+        const newFile = {
+            id: 'FILE_' + Date.now(),
+            anomalyId: currentAnomalyId,
+            date: new Date().toISOString(),
+            notes: notes,
+            label: "Registro de Campo - " + new Date().toLocaleTimeString()
+        };
+        
+        if (db) db.ref('files/' + newFile.id).set(newFile);
+        showNotification("Arquivo enviado para o servidor.");
+    });
+
+    // =====================================================================
+    // IMPORTAÇÃO DE JSON (O Ponto Principal da Correção)
+    // =====================================================================
+    el('jsonInput').addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const data = JSON.parse(ev.target.result);
+                
+                // Verifica a estrutura do seu arquivo (A001_COMPLETO)
+                if (data.anomaly) {
+                    const anomaly = data.anomaly;
+                    
+                    // 1. Enviar Anomalia para o Banco de Dados
+                    if (db) {
+                        db.ref('anomalies/' + anomaly.id).set(anomaly)
+                          .then(() => showNotification(`Anomalia ${anomaly.id} sincronizada!`))
+                          .catch(err => alert("Erro no upload: " + err));
+                    }
+
+                    // 2. Enviar Arquivos Importantes (se houver)
+                    if (data.importantFiles && Array.isArray(data.importantFiles)) {
+                        data.importantFiles.forEach(f => {
+                            if (db) db.ref('files/' + f.id).set(f);
+                        });
+                        showNotification(`${data.importantFiles.length} arquivos anexados.`);
+                    }
+                } else {
+                    throw new Error("Formato inválido. JSON deve conter objeto 'anomaly'.");
+                }
+                
+                // Limpar input
+                el('jsonInput').value = '';
+                
+            } catch (err) {
+                alert("ERRO NA LEITURA DO ARQUIVO:\n" + err.message);
+            }
+        };
+        reader.readAsText(file);
+    });
 }
 
-// INICIAR TELA DE CARREGAMENTO
-window.addEventListener('DOMContentLoaded', () => {
-  // Esconder o conteúdo principal inicialmente
-  document.body.style.opacity = '0';
-  
-  // Iniciar a sequência de carregamento
-  startLoadingScreen();
-});
+// Iniciar
+window.addEventListener('DOMContentLoaded', startLoadingScreen);
+
 </script>
 </body>
 </html>
